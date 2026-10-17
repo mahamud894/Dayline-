@@ -89,6 +89,9 @@ interface HabitDao {
     @Query("SELECT * FROM habits WHERE id = :id")
     suspend fun getById(id: String): HabitEntity?
 
+    @Query("SELECT * FROM habits ORDER BY title, id")
+    suspend fun getAll(): List<HabitEntity>
+
     @Query("UPDATE habits SET currentStreak = :current, bestStreak = :best WHERE id = :id")
     suspend fun updateStreak(id: String, current: Int, best: Int): Int
 }

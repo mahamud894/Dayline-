@@ -69,6 +69,36 @@ class HabitRepositoryTest {
         )
     }
 
+    @Test
+    fun observingCompletionsReturnsHabitIdsForTheRequestedLocalDate() = runTest {
+        val habit = sampleHabit()
+        val date = LocalDate.of(2026, 10, 18)
+        repository.saveHabit(habit)
+
+        assertEquals(emptySet<String>(), repository.observeCompletedHabitIds(date).first())
+        repository.completeForDate(habit.id, date)
+        assertEquals(setOf(habit.id), repository.observeCompletedHabitIds(date).first())
+    }
+
+    @Test
+    fun refreshingAfterTwoMissedScheduledDaysResetsCurrentAndPreservesBest() = runTest {
+        val habit = sampleHabit().copy(
+            createdAtLocalDate = LocalDate.of(2026, 10, 16),
+            currentStreak = 2,
+            bestStreak = 5
+        )
+        repository.saveHabit(habit)
+        database.habitCompletionDao().record(habit.id, LocalDate.of(2026, 10, 16))
+        database.habitCompletionDao().record(habit.id, LocalDate.of(2026, 10, 17))
+
+        repository.refreshStreaks(LocalDate.of(2026, 10, 19))
+
+        assertEquals(
+            habit.copy(currentStreak = 0),
+            repository.observeHabits().first().single()
+        )
+    }
+
     private fun sampleHabit() = Habit(
         id = "habit-1",
         title = "Morning stretch",

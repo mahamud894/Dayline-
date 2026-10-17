@@ -40,8 +40,10 @@ import com.dayline.domain.model.TaskStatus
 import com.dayline.domain.summary.SummaryCategory
 import com.dayline.domain.summary.SummaryItem
 import com.dayline.domain.summary.rankDailySummary
+import com.dayline.ui.habits.HabitCard
 import com.dayline.ui.tasks.formatTaskDueAt
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -50,11 +52,13 @@ import java.time.format.DateTimeFormatter
 fun TodayScreen(
     tasks: List<Task>,
     habits: List<Habit>,
+    today: LocalDate,
+    completedHabitIds: Set<String>,
+    onCompleteHabit: (Habit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val zoneId = remember { ZoneId.systemDefault() }
     val now = remember { ZonedDateTime.now(zoneId) }
-    val today = now.toLocalDate()
     val summary = remember(tasks, habits, now, zoneId) {
         rankDailySummary(tasks, habits, now, zoneId)
     }
@@ -150,7 +154,11 @@ fun TodayScreen(
             item { EmptyCard("Your routines will appear here on their scheduled days.") }
         } else {
             items(todayHabits, key = Habit::id) { habit ->
-                HabitCard(habit)
+                HabitCard(
+                    habit = habit,
+                    completedToday = habit.id in completedHabitIds,
+                    onComplete = { onCompleteHabit(habit) }
+                )
             }
         }
     }
@@ -342,32 +350,6 @@ private fun DeadlineCard(task: Task) {
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold
             )
-        }
-    }
-}
-
-@Composable
-private fun HabitCard(habit: Habit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF142220))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(habit.title, color = Color(0xFFF4F5FF), fontWeight = FontWeight.SemiBold)
-                Text(
-                    text = if (habit.currentStreak == 1) "1 day streak" else "${habit.currentStreak} day streak",
-                    color = Color(0xFFA7DCD2),
-                    fontSize = 12.sp
-                )
-            }
-            Text("TODAY", color = Color(0xFF59F5D8), fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
