@@ -60,4 +60,16 @@ interface TaskDao {
 
     @Query("UPDATE tasks SET status = :status, completedAtEpochMillis = :completedAt WHERE id = :id")
     suspend fun updateStatus(id: String, status: String, completedAt: Long?): Int
+
+    @Query(
+        "UPDATE tasks SET status = 'COMPLETED', completedAtEpochMillis = :completedAt " +
+            "WHERE id = :id AND status IN ('ACTIVE', 'OVERDUE')"
+    )
+    suspend fun completeIfIncomplete(id: String, completedAt: Long): Int
+
+    @Query(
+        "UPDATE tasks SET status = 'OVERDUE' " +
+            "WHERE id = :id AND status = 'ACTIVE' AND dueAtEpochMillis <= :nowEpochMillis"
+    )
+    suspend fun markOverdueIfActive(id: String, nowEpochMillis: Long): Int
 }

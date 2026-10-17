@@ -45,7 +45,13 @@ private enum class Destination(val label: String) {
 @Composable
 fun DaylineNavHost(container: AppContainer) {
     val taskViewModel: TaskViewModel = viewModel(
-        factory = remember(container) { TaskViewModel.Factory(container.taskRepository) }
+        factory = remember(container) {
+            TaskViewModel.Factory(
+                container.taskRepository,
+                container.reminderScheduler,
+                container.reminderActionHandler
+            )
+        }
     )
     val habitViewModel: HabitViewModel = viewModel(
         factory = remember(container) { HabitViewModel.Factory(container.habitRepository) }

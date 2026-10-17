@@ -12,6 +12,8 @@ interface TaskRepository {
     suspend fun saveTask(task: Task)
     suspend fun setTaskStatus(id: String, status: TaskStatus, atEpochMillis: Long)
     suspend fun getTask(id: String): Task?
+    suspend fun completeIfIncomplete(id: String, atEpochMillis: Long): Boolean
+    suspend fun markOverdueIfActive(id: String, nowEpochMillis: Long): Boolean
 }
 
 class RoomTaskRepository(private val database: DaylineDatabase) : TaskRepository {
@@ -31,4 +33,10 @@ class RoomTaskRepository(private val database: DaylineDatabase) : TaskRepository
 
     override suspend fun getTask(id: String): Task? =
         database.taskDao().getById(id)?.toDomain()
+
+    override suspend fun completeIfIncomplete(id: String, atEpochMillis: Long): Boolean =
+        database.taskDao().completeIfIncomplete(id, atEpochMillis) == 1
+
+    override suspend fun markOverdueIfActive(id: String, nowEpochMillis: Long): Boolean =
+        database.taskDao().markOverdueIfActive(id, nowEpochMillis) == 1
 }

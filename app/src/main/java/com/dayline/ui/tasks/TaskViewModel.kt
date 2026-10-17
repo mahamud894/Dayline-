@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dayline.data.TaskRepository
+import com.dayline.domain.reminders.ReminderScheduler
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskPriority
 import com.dayline.domain.model.TaskStatus
+import com.dayline.platform.reminders.ReminderAction
+import com.dayline.platform.reminders.ReminderActionHandler
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -19,7 +22,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
+class TaskViewModel(
+    private val repository: TaskRepository,
+    private val reminderScheduler: ReminderScheduler,
+    private val reminderActionHandler: ReminderActionHandler
+) : ViewModel() {
     val tasks: StateFlow<List<Task>> = repository.observeTasks().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -58,18 +65,18 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
         mutableSaveError.value = null
         viewModelScope.launch {
-            repository.saveTask(
-                Task(
-                    id = existing?.id ?: UUID.randomUUID().toString(),
-                    title = cleanTitle,
-                    notes = notes.trim().ifEmpty { null },
-                    dueAtEpochMillis = dueAt,
-                    priority = priority,
-                    status = existing?.status ?: TaskStatus.ACTIVE,
-                    quietModeOverrideAllowed = quietModeOverrideAllowed,
-                    completedAtEpochMillis = existing?.completedAtEpochMillis
-                )
+            val task = Task(
+                id = existing?.id ?: UUID.randomUUID().toString(),
+                title = cleanTitle,
+                notes = notes.trim().ifEmpty { null },
+                dueAtEpochMillis = dueAt,
+                priority = priority,
+                status = existing?.status ?: TaskStatus.ACTIVE,
+                quietModeOverrideAllowed = quietModeOverrideAllowed,
+                completedAtEpochMillis = existing?.completedAtEpochMillis
             )
+            repository.saveTask(task)
+            if (task.status == TaskStatus.ACTIVE) reminderScheduler.schedule(task)
             onSaved()
         }
     }
@@ -80,15 +87,19 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
     fun completeTask(id: String) {
         viewModelScope.launch {
-            repository.setTaskStatus(id, TaskStatus.COMPLETED, System.currentTimeMillis())
+            reminderActionHandler.handle(id, ReminderAction.DONE)
         }
     }
 
-    class Factory(private val repository: TaskRepository) : ViewModelProvider.Factory {
+    class Factory(
+        private val repository: TaskRepository,
+        private val reminderScheduler: ReminderScheduler,
+        private val reminderActionHandler: ReminderActionHandler
+    ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             require(modelClass.isAssignableFrom(TaskViewModel::class.java))
             @Suppress("UNCHECKED_CAST")
-            return TaskViewModel(repository) as T
+            return TaskViewModel(repository, reminderScheduler, reminderActionHandler) as T
         }
     }
 

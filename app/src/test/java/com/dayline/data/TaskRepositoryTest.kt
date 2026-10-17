@@ -11,6 +11,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -59,6 +61,31 @@ class TaskRepositoryTest {
     @Test
     fun missingTaskReturnsNull() = runTest {
         assertNull(repository.getTask("missing"))
+    }
+
+    @Test
+    fun completionAndOverdueTransitionsOnlyApplyToActiveTasks() = runTest {
+        val completedTask = sampleTask()
+        val completedAt = Instant.parse("2026-10-18T12:00:00Z").toEpochMilli()
+        repository.saveTask(completedTask)
+
+        assertTrue(repository.completeIfIncomplete(completedTask.id, completedAt))
+        assertFalse(repository.markOverdueIfActive(completedTask.id, completedTask.dueAtEpochMillis!! + 1))
+        assertFalse(repository.completeIfIncomplete(completedTask.id, completedAt + 1))
+        assertEquals(
+            completedTask.copy(status = TaskStatus.COMPLETED, completedAtEpochMillis = completedAt),
+            repository.getTask(completedTask.id)
+        )
+    }
+
+    @Test
+    fun overdueTransitionIsIdempotentAndDoesNotSetCompletionTime() = runTest {
+        val task = sampleTask()
+        repository.saveTask(task)
+
+        assertTrue(repository.markOverdueIfActive(task.id, task.dueAtEpochMillis!! + 1))
+        assertFalse(repository.markOverdueIfActive(task.id, task.dueAtEpochMillis + 1))
+        assertEquals(task.copy(status = TaskStatus.OVERDUE), repository.getTask(task.id))
     }
 
     private fun sampleTask() = Task(

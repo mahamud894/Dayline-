@@ -9,5 +9,6 @@ class DaylineApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        container.notificationFactory.createChannels()
     }
 }
