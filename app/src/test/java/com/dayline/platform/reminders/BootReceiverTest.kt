@@ -57,16 +57,18 @@ class BootReceiverTest {
         repository.saveTask(future)
         repository.saveTask(completed)
 
-        ReminderBootHandler(
+        val handler = ReminderBootHandler(
             repository = repository,
             scheduler = scheduler,
             notifications = notifications,
             clock = Clock.fixed(Instant.ofEpochMilli(NOW), ZoneOffset.UTC)
-        ).restore()
+        )
+        handler.restore()
+        handler.restore()
 
         assertEquals(TaskStatus.OVERDUE, repository.getTask(overdue.id)?.status)
         assertEquals(TaskStatus.COMPLETED, repository.getTask(completed.id)?.status)
-        assertEquals(listOf(future.id), scheduler.scheduledTaskIds)
+        assertEquals(listOf(future.id, future.id), scheduler.scheduledTaskIds)
         assertEquals(setOf(overdue.id), notifications.overdueTaskIds)
         assertTrue(scheduler.cancelledTaskIds.containsAll(listOf(overdue.id, completed.id)))
     }

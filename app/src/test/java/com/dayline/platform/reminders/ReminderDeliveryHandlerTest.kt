@@ -12,6 +12,9 @@ import com.dayline.domain.reminders.ReminderScheduler
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -58,6 +61,35 @@ class ReminderDeliveryHandlerTest {
         assertEquals(TaskStatus.COMPLETED, repository.getTask(task.id)?.status)
         assertTrue(notifications.overdueTaskIds.isEmpty())
         assertTrue(scheduler.cancelledTaskIds.contains(task.id))
+    }
+
+    @Test
+    fun simultaneousCompletionAndDeadlineDeliveryLeaveTaskCompleted() = runTest {
+        val task = sampleTask().copy(dueAtEpochMillis = NOW)
+        repository.saveTask(task)
+        val start = CompletableDeferred<Unit>()
+        val actions = ReminderActionHandler(
+            repository = repository,
+            scheduler = scheduler,
+            notifications = notifications,
+            clock = Clock.fixed(Instant.ofEpochMilli(NOW), ZoneOffset.UTC),
+            snoozeMinutes = { 10 }
+        )
+        val completion = async(Dispatchers.Default) {
+            start.await()
+            actions.handle(task.id, ReminderAction.DONE)
+        }
+        val delivery = async(Dispatchers.Default) {
+            start.await()
+            deliveryHandler().deliver(task.id, ReminderKind.OVERDUE, NOW)
+        }
+
+        start.complete(Unit)
+        completion.await()
+        delivery.await()
+
+        assertEquals(TaskStatus.COMPLETED, repository.getTask(task.id)?.status)
+        assertTrue(notifications.overdueTaskIds.isEmpty())
     }
 
     @Test

@@ -64,6 +64,29 @@ class AndroidReminderSchedulerTest {
     }
 
     @Test
+    fun repeatedSchedulingReusesStableUniqueReminderIdentities() {
+        val workEnqueuer = RecordingReminderWorkEnqueuer()
+        val scheduler = AndroidReminderScheduler(
+            context = RuntimeEnvironment.getApplication(),
+            repository = repository,
+            notifications = RecordingTaskNotificationController(),
+            clock = Clock.fixed(Instant.ofEpochMilli(NOW), ZoneOffset.UTC),
+            exactAlarmAccess = { false },
+            workEnqueuer = workEnqueuer
+        )
+
+        kotlinx.coroutines.runBlocking {
+            scheduler.schedule(sampleTask())
+            scheduler.schedule(sampleTask())
+        }
+
+        val identities = workEnqueuer.scheduled.map { it.identity }
+        assertEquals(10, identities.size)
+        assertEquals(5, identities.toSet().size)
+        assertEquals(identities.take(5), identities.takeLast(5))
+    }
+
+    @Test
     fun disabledNotificationsDoNotReportRemindersAsScheduled() {
         val workEnqueuer = RecordingReminderWorkEnqueuer()
         val scheduler = AndroidReminderScheduler(

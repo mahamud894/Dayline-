@@ -68,6 +68,30 @@ class MorningSummarySchedulerTest {
     }
 
     @Test
+    fun springForwardGapResolvesConfiguredSummaryToNextValidLocalTime() = runTest {
+        val zone = ZoneId.of("America/Los_Angeles")
+        val now = LocalDate.of(2026, 3, 8).atTime(1, 0).atZone(zone).toInstant()
+        val work = RecordingSummaryFallbackWorkEnqueuer()
+        val scheduler = MorningSummaryScheduler(
+            context = RuntimeEnvironment.getApplication(),
+            clock = Clock.fixed(now, zone),
+            zoneId = zone,
+            exactAlarmAccess = { false },
+            notificationAccess = { true },
+            workEnqueuer = work
+        )
+
+        scheduler.schedule(
+            UserSettings(morningSummaryTime = LocalTime.of(2, 30))
+        )
+
+        assertEquals(
+            LocalDate.of(2026, 3, 8).atTime(3, 30).atZone(zone).toInstant().toEpochMilli(),
+            work.triggerAtEpochMillis
+        )
+    }
+
+    @Test
     fun disabledSummaryCancelsFallbackWithoutSchedulingAnother() = runTest {
         val work = RecordingSummaryFallbackWorkEnqueuer()
         val scheduler = MorningSummaryScheduler(
