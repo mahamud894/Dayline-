@@ -1,5 +1,10 @@
 package com.dayline.ui.navigation
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
@@ -17,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -30,6 +36,8 @@ import com.dayline.ui.habits.HabitEditorScreen
 import com.dayline.ui.habits.HabitViewModel
 import com.dayline.ui.habits.HabitsScreen
 import com.dayline.ui.profile.ProfileScreen
+import com.dayline.ui.settings.SettingsScreen
+import com.dayline.ui.settings.SettingsViewModel
 import com.dayline.ui.tasks.TaskEditorScreen
 import com.dayline.ui.tasks.TaskViewModel
 import com.dayline.ui.tasks.TasksScreen
@@ -39,11 +47,13 @@ private enum class Destination(val label: String) {
     TODAY("Today"),
     TASKS("Tasks"),
     HABITS("Habits"),
-    PROFILE("Profile")
+    PROFILE("Profile"),
+    SETTINGS("Settings")
 }
 
 @Composable
 fun DaylineNavHost(container: AppContainer) {
+    val navigationDestinations = remember { Destination.entries.filter { it != Destination.SETTINGS } }
     val taskViewModel: TaskViewModel = viewModel(
         factory = remember(container) {
             TaskViewModel.Factory(
@@ -56,12 +66,25 @@ fun DaylineNavHost(container: AppContainer) {
     val habitViewModel: HabitViewModel = viewModel(
         factory = remember(container) { HabitViewModel.Factory(container.habitRepository) }
     )
+    val settingsViewModel: SettingsViewModel = viewModel(
+        factory = remember(container) {
+            SettingsViewModel.Factory(
+                container.userSettingsStore,
+                container.morningSummaryScheduler,
+                container.notificationFactory
+            )
+        }
+    )
+    val context = LocalContext.current
     val tasks by taskViewModel.tasks.collectAsState()
     val habits by habitViewModel.habits.collectAsState()
     val today by habitViewModel.today.collectAsState()
     val completedHabitIds by habitViewModel.completedHabitIds.collectAsState()
     val saveError by taskViewModel.saveError.collectAsState()
     val habitSaveError by habitViewModel.saveError.collectAsState()
+    val userSettings by settingsViewModel.settings.collectAsState()
+    val summaryScheduleStatus by settingsViewModel.scheduleStatus.collectAsState()
+    val settingsError by settingsViewModel.error.collectAsState()
     var selected by rememberSaveable { mutableStateOf(Destination.TODAY) }
     var isEditorVisible by rememberSaveable { mutableStateOf(false) }
     var editingTaskId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -120,7 +143,7 @@ fun DaylineNavHost(container: AppContainer) {
             containerColor = Color(0xFF0B0D14),
             bottomBar = {
                 NavigationBar(containerColor = Color(0xFF111620)) {
-                    Destination.entries.forEach { destination ->
+                    navigationDestinations.forEach { destination ->
                         NavigationBarItem(
                             selected = selected == destination,
                             onClick = { selected = destination },
@@ -132,6 +155,7 @@ fun DaylineNavHost(container: AppContainer) {
                                         Destination.TASKS -> "▤"
                                         Destination.HABITS -> "✦"
                                         Destination.PROFILE -> "◉"
+                                        Destination.SETTINGS -> "⚙"
                                     },
                                     fontSize = 18.sp
                                 )
@@ -198,6 +222,46 @@ fun DaylineNavHost(container: AppContainer) {
                 )
                 Destination.PROFILE -> ProfileScreen(
                     habits = habits,
+                    onOpenSettings = { selected = Destination.SETTINGS },
+                    modifier = Modifier.padding(contentPadding)
+                )
+                Destination.SETTINGS -> SettingsScreen(
+                    settings = userSettings,
+                    scheduleStatus = summaryScheduleStatus,
+                    error = settingsError,
+                    onSummaryEnabledChange = settingsViewModel::setSummaryEnabled,
+                    onSaveSummaryTime = settingsViewModel::saveSummaryTime,
+                    onClearError = settingsViewModel::clearError,
+                    onBack = { selected = Destination.PROFILE },
+                    onOpenNotificationSettings = {
+                        context.startActivity(
+                            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                            }
+                        )
+                    },
+                    onOpenExactAlarmSettings = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            try {
+                                context.startActivity(
+                                    Intent(
+                                        Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                                        Uri.parse("package:${context.packageName}")
+                                    )
+                                )
+                            } catch (_: ActivityNotFoundException) {
+                                context.startActivity(
+                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                        .setData(Uri.parse("package:${context.packageName}"))
+                                )
+                            }
+                        }
+                    },
+                    onOpenDndSettings = {
+                        context.startActivity(
+                            Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                        )
+                    },
                     modifier = Modifier.padding(contentPadding)
                 )
             }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,7 +22,11 @@ import androidx.compose.ui.unit.sp
 import com.dayline.domain.model.Habit
 
 @Composable
-fun ProfileScreen(habits: List<Habit>, modifier: Modifier = Modifier) {
+fun ProfileScreen(
+    habits: List<Habit>,
+    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val bestStreak = habits.maxOfOrNull(Habit::bestStreak) ?: 0
     val currentStreak = habits.sumOf(Habit::currentStreak)
 
@@ -100,6 +105,16 @@ fun ProfileScreen(habits: List<Habit>, modifier: Modifier = Modifier) {
                         fontSize = 13.sp
                     )
                 }
+            }
+        }
+        item {
+            Button(
+                onClick = onOpenSettings,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("open-settings")
+            ) {
+                Text("Settings")
             }
         }
     }

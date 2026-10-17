@@ -5,6 +5,7 @@ import com.dayline.domain.model.Habit
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskPriority
 import com.dayline.domain.model.TaskStatus
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -22,10 +23,12 @@ fun rankDailySummary(
     habits: List<Habit>,
     now: ZonedDateTime,
     zoneId: ZoneId,
-    limit: Int = 5
+    limit: Int = 5,
+    summaryDate: LocalDate? = null
 ): List<SummaryItem> {
-    val localDate = now.withZoneSameInstant(zoneId).toLocalDate()
+    val localDate = summaryDate ?: now.withZoneSameInstant(zoneId).toLocalDate()
     val nowEpochMillis = now.toInstant().toEpochMilli()
+    val startOfLocalDay = localDate.atStartOfDay(zoneId).toInstant().toEpochMilli()
     val endOfLocalDay = localDate.plusDays(1).atStartOfDay(zoneId).toInstant().toEpochMilli()
     val overdue = tasks
         .filter { it.status == TaskStatus.OVERDUE }
@@ -33,7 +36,9 @@ fun rankDailySummary(
     val deadlines = tasks
         .filter { task ->
             task.status == TaskStatus.ACTIVE &&
-                task.dueAtEpochMillis?.let { it > nowEpochMillis && it < endOfLocalDay } == true
+                task.dueAtEpochMillis?.let {
+                    it > nowEpochMillis && it >= startOfLocalDay && it < endOfLocalDay
+                } == true
         }
         .sortedBy { it.dueAtEpochMillis }
         .map {
@@ -47,7 +52,9 @@ fun rankDailySummary(
         .filter { task ->
             task.status == TaskStatus.ACTIVE &&
                 task.priority == TaskPriority.HIGH &&
-                task.dueAtEpochMillis?.let { it > nowEpochMillis && it < endOfLocalDay } != true
+            task.dueAtEpochMillis?.let {
+                it > nowEpochMillis && it >= startOfLocalDay && it < endOfLocalDay
+            } != true
         }
         .map { SummaryItem(task = it, category = SummaryCategory.HIGH_PRIORITY) }
     val scheduledHabits = habits

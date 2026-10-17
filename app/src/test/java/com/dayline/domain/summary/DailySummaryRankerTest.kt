@@ -147,6 +147,28 @@ class DailySummaryRankerTest {
         )
     }
 
+    @Test
+    fun ranksSummaryForTargetDateWhenUnlockWindowCrossesMidnight() {
+        val lateEvening = ZonedDateTime.of(2026, 10, 18, 23, 30, 0, 0, zoneId)
+        val nextMorningDeadline = task(
+            id = "next-morning",
+            dueAt = ZonedDateTime.of(2026, 10, 19, 8, 0, 0, 0, zoneId)
+        )
+
+        val ranked = rankDailySummary(
+            tasks = listOf(nextMorningDeadline),
+            habits = listOf(habit("next-day-habit", HabitSchedule.Daily)),
+            now = lateEvening,
+            zoneId = zoneId,
+            summaryDate = LocalDate.of(2026, 10, 19)
+        )
+
+        assertEquals(
+            listOf("next-morning", "next-day-habit"),
+            ranked.map { it.task?.id ?: it.habit?.id }
+        )
+    }
+
     private fun task(
         id: String,
         dueAt: ZonedDateTime? = null,

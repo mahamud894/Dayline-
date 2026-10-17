@@ -11,12 +11,18 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.dayline.MainActivity
 import com.dayline.domain.model.Task
+import com.dayline.domain.summary.SummaryCategory
+import com.dayline.domain.summary.SummaryItem
 import com.dayline.domain.reminders.ReminderKind
 import com.dayline.platform.reminders.ReminderAction
 import com.dayline.platform.reminders.ReminderActionReceiver
 import com.dayline.platform.reminders.TaskNotificationController
+import com.dayline.platform.summary.SummaryNotificationController
+import java.time.LocalDate
 
-class DaylineNotificationFactory(private val context: Context) : TaskNotificationController {
+class DaylineNotificationFactory(private val context: Context) :
+    TaskNotificationController,
+    SummaryNotificationController {
     private val notificationManager =
         checkNotNull(ContextCompat.getSystemService(context, NotificationManager::class.java)) {
             "Android notification service is unavailable."
@@ -53,6 +59,11 @@ class DaylineNotificationFactory(private val context: Context) : TaskNotificatio
                 CHANNEL_OVERDUE,
                 "Overdue tasks",
                 NotificationManager.IMPORTANCE_HIGH
+            ),
+            NotificationChannel(
+                CHANNEL_SUMMARY,
+                "Daily summaries",
+                NotificationManager.IMPORTANCE_LOW
             )
         )
         notificationManager.createNotificationChannels(channels)
@@ -110,6 +121,46 @@ class DaylineNotificationFactory(private val context: Context) : TaskNotificatio
     override fun clearTask(taskId: String) {
         dismissCurrent(taskId)
         clearOverdueAcknowledgment(taskId)
+    }
+
+    override fun showSummary(date: LocalDate, items: List<SummaryItem>) {
+        ensureNotificationsEnabled()
+        val body = items.take(5).mapIndexed { index, item ->
+            val label = when (item.category) {
+                SummaryCategory.OVERDUE -> "OVERDUE"
+                SummaryCategory.DEADLINE -> "DEADLINE"
+                SummaryCategory.HIGH_PRIORITY -> "HIGH PRIORITY"
+                SummaryCategory.HABIT -> "HABIT"
+            }
+            "${index + 1}. $label · ${item.task?.title ?: item.habit?.title.orEmpty()}"
+        }.ifEmpty { listOf("No urgent commitments on your list today.") }
+        val contentIntent = PendingIntent.getActivity(
+            context,
+            SUMMARY_NOTIFICATION_ID,
+            Intent(context, MainActivity::class.java).apply {
+                action = ACTION_OPEN_SUMMARY
+                data = Uri.parse("dayline://summary/$date")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val notification = Notification.Builder(context, CHANNEL_SUMMARY)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("Dayline · Today")
+            .setContentText("${items.size} priorities for $date")
+            .setStyle(Notification.BigTextStyle().bigText(body.joinToString("\n")))
+            .setContentIntent(contentIntent)
+            .addAction(Notification.Action.Builder(null, "View all", contentIntent).build())
+            .setCategory(Notification.CATEGORY_EVENT)
+            .setVisibility(Notification.VISIBILITY_PRIVATE)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .build()
+        notificationManager.notify(SUMMARY_TAG, SUMMARY_NOTIFICATION_ID, notification)
+    }
+
+    override fun clearSummary() {
+        notificationManager.cancel(SUMMARY_TAG, SUMMARY_NOTIFICATION_ID)
     }
 
     private fun buildTaskNotification(
@@ -181,6 +232,10 @@ class DaylineNotificationFactory(private val context: Context) : TaskNotificatio
         const val CHANNEL_URGENT = "dayline_task_urgent"
         const val CHANNEL_URGENT_DND = "dayline_task_urgent_dnd"
         const val CHANNEL_OVERDUE = "dayline_task_overdue"
+        const val CHANNEL_SUMMARY = "dayline_daily_summary"
+        const val SUMMARY_NOTIFICATION_ID = 2
+        const val ACTION_OPEN_SUMMARY = "com.dayline.action.OPEN_SUMMARY"
+        private const val SUMMARY_TAG = "daily-summary"
         private const val ACKNOWLEDGMENT_STORE = "dayline_overdue_acknowledgments"
 
         private fun acknowledgmentKey(taskId: String) = "task:$taskId"

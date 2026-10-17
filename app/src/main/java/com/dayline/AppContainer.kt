@@ -12,6 +12,10 @@ import com.dayline.platform.notifications.DaylineNotificationFactory
 import com.dayline.platform.reminders.AndroidReminderScheduler
 import com.dayline.platform.reminders.ReminderActionHandler
 import com.dayline.platform.reminders.ReminderDeliveryHandler
+import com.dayline.platform.summary.MorningSummaryScheduler
+import com.dayline.platform.summary.RepositoryDailySummaryDelivery
+import com.dayline.platform.summary.SharedPreferencesSummaryDeliveryGate
+import com.dayline.platform.summary.SmartWakeCoordinator
 import java.time.Clock
 import kotlinx.coroutines.flow.first
 
@@ -42,5 +46,16 @@ class AppContainer(application: Application) {
         repository = taskRepository,
         scheduler = reminderScheduler,
         notifications = notificationFactory
+    )
+    val morningSummaryScheduler = MorningSummaryScheduler(application)
+    val smartWakeCoordinator = SmartWakeCoordinator(
+        settings = { userSettingsStore.settings.first() },
+        gate = SharedPreferencesSummaryDeliveryGate(application),
+        delivery = RepositoryDailySummaryDelivery(
+            taskRepository = taskRepository,
+            habitRepository = habitRepository,
+            notifications = notificationFactory
+        ),
+        cancelFallback = { morningSummaryScheduler.cancel() }
     )
 }

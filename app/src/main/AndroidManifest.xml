@@ -33,5 +33,14 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".platform.summary.SmartWakeReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.USER_PRESENT" />
+                <action android:name="com.dayline.action.SUMMARY_FALLBACK" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
