@@ -24,7 +24,7 @@
 - At a missed deadline, stop escalation alarms and mark the task `OVERDUE`; retain one persistent overdue notification until acknowledged, rescheduled, or completed.
 - Restore pending AlarmManager/WorkManager reminders after `ACTION_BOOT_COMPLETED`, with any required Android permissions and user-facing setup.
 - Habit completion is for the current local calendar day; one missed scheduled day freezes a streak and two consecutive missed scheduled days reset it while preserving the best streak.
-- No Git repository exists in the supplied workspace; do not include commit steps unless Git is initialized separately.
+- Git was initialized at the user's request for worktree isolation; commit each completed task separately with the required Co-authored-by trailer.
 
 ## Review Focus
 
@@ -158,7 +158,7 @@ Use injected `Clock`/`ZoneId` in domain calculations rather than reading wall-cl
 
 - [ ] **Step 1: Create the Android project and verify the empty app builds**
 
-Create the Gradle wrapper, one `:app` module, version catalog, Kotlin Android/Compose plugins, Material 3 Compose, lifecycle ViewModel Compose, Room runtime/compiler, DataStore Preferences, WorkManager, JUnit, kotlinx-coroutines-test, Robolectric, and Compose UI test dependencies. Choose mutually compatible stable versions; enable Compose and Java/Kotlin 17. Create a minimal Activity with a Compose content host.
+Create the Gradle wrapper, one `:app` module, version catalog, Kotlin Android/Compose and KSP plugins, Material 3 Compose, lifecycle ViewModel Compose, Room runtime/compiler, DataStore Preferences, WorkManager, JUnit, kotlinx-coroutines-test, Robolectric, and Compose UI test dependencies. Choose mutually compatible stable versions; enable Compose and Java/Kotlin 17. Create a minimal Activity with a Compose content host.
 
 - [ ] **Step 2: Run the initial build**
 
@@ -228,7 +228,7 @@ Expected: PASS, including idempotent habit completion.
 
 - [ ] **Step 1: Write ranking tests**
 
-Assert the exact order: prior-day overdue tasks; current-day hard deadlines sorted by timestamp; remaining `HIGH` tasks; habits scheduled for today. Assert a maximum of five items by default, explicit `limit = 3` returns three, and limits below 3 or above 5 are clamped to the inclusive 3–5 range. Assert equal-ranked tasks retain stable input order.
+Assert the exact order: all `OVERDUE` tasks (including a task whose deadline passed earlier today); current-day future hard deadlines sorted by timestamp; remaining `HIGH` tasks; habits scheduled for today. Assert a maximum of five items by default, explicit `limit = 3` returns three, and limits below 3 or above 5 are clamped to the inclusive 3–5 range. Assert equal-ranked tasks retain stable input order.
 
 - [ ] **Step 2: Run ranking tests to verify they fail**
 
