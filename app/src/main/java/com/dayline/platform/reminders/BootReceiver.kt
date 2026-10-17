@@ -8,6 +8,7 @@ import com.dayline.DaylineApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class BootReceiver : BroadcastReceiver() {
@@ -16,9 +17,12 @@ class BootReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
-                (context.applicationContext as DaylineApp).container.reminderScheduler.restorePending()
+                val container = (context.applicationContext as DaylineApp).container
+                container.reminderScheduler.restorePending()
+                val settings = container.userSettingsStore.settings.first()
+                container.morningSummaryScheduler.schedule(settings)
             } catch (exception: Exception) {
-                Log.e(TAG, "Unable to restore Dayline reminders after boot.", exception)
+                Log.e(TAG, "Unable to restore Dayline schedules after boot.", exception)
             } finally {
                 pendingResult.finish()
             }
