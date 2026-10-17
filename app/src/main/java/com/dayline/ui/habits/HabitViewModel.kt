@@ -11,6 +11,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,13 +37,19 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
 
     private val mutableSaveError = MutableStateFlow<String?>(null)
     val saveError: StateFlow<String?> = mutableSaveError.asStateFlow()
+    private var midnightRefreshJob: Job? = null
 
     init {
-        viewModelScope.launch { refreshToday() }
-        viewModelScope.launch {
+        refreshToday()
+    }
+
+    fun refreshToday() {
+        midnightRefreshJob?.cancel()
+        viewModelScope.launch { refreshTodayState() }
+        midnightRefreshJob = viewModelScope.launch {
             while (isActive) {
                 delay(millisUntilNextMidnight())
-                refreshToday()
+                refreshTodayState()
             }
         }
     }
@@ -88,7 +95,7 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
         mutableSaveError.value = null
     }
 
-    private suspend fun refreshToday() {
+    private suspend fun refreshTodayState() {
         val date = LocalDate.now(ZoneId.systemDefault())
         repository.refreshStreaks(date)
         mutableToday.value = date

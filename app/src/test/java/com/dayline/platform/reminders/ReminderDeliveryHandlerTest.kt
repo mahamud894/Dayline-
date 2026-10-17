@@ -2,6 +2,7 @@ package com.dayline.platform.reminders
 
 import androidx.room.Room
 import com.dayline.data.RoomTaskRepository
+import com.dayline.data.TaskRepository
 import com.dayline.data.local.DaylineDatabase
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskPriority
@@ -16,6 +17,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
+import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -93,6 +95,45 @@ class ReminderDeliveryHandlerTest {
     }
 
     @Test
+    fun completionBetweenReminderReadAndPostDoesNotRecreateReminder() = runTest {
+        val task = sampleTask().copy(dueAtEpochMillis = NOW + TWO_HOURS)
+        repository.saveTask(task)
+        val snapshotRead = CompletableDeferred<Unit>()
+        val allowDelivery = CompletableDeferred<Unit>()
+        val firstRead = AtomicBoolean(true)
+        val racingRepository = object : TaskRepository by repository {
+            override suspend fun getTask(id: String): Task? {
+                val snapshot = repository.getTask(id)
+                if (firstRead.compareAndSet(true, false)) {
+                    snapshotRead.complete(Unit)
+                    allowDelivery.await()
+                }
+                return snapshot
+            }
+        }
+        val delivery = async(Dispatchers.Default) {
+            ReminderDeliveryHandler(
+                repository = racingRepository,
+                scheduler = scheduler,
+                notifications = notifications,
+                clock = Clock.fixed(Instant.ofEpochMilli(NOW), ZoneOffset.UTC)
+            ).deliver(
+                taskId = task.id,
+                kind = ReminderKind.TWO_HOURS,
+                triggerAtEpochMillis = task.dueAtEpochMillis!! - TWO_HOURS
+            )
+        }
+
+        snapshotRead.await()
+        actionHandler().handle(task.id, ReminderAction.DONE)
+        allowDelivery.complete(Unit)
+        delivery.await()
+
+        assertEquals(TaskStatus.COMPLETED, repository.getTask(task.id)?.status)
+        assertTrue(notifications.reminders.isEmpty())
+    }
+
+    @Test
     fun snoozeForAnOverdueTaskShowsOneShotReminderWithoutRestoringPersistentAlert() = runTest {
         val task = sampleTask().copy(status = TaskStatus.OVERDUE)
         repository.saveTask(task)
@@ -110,6 +151,14 @@ class ReminderDeliveryHandlerTest {
         scheduler = scheduler,
         notifications = notifications,
         clock = Clock.fixed(Instant.ofEpochMilli(NOW), ZoneOffset.UTC)
+    )
+
+    private fun actionHandler() = ReminderActionHandler(
+        repository = repository,
+        scheduler = scheduler,
+        notifications = notifications,
+        clock = Clock.fixed(Instant.ofEpochMilli(NOW), ZoneOffset.UTC),
+        snoozeMinutes = { 10 }
     )
 
     private fun sampleTask() = Task(
@@ -137,6 +186,7 @@ class ReminderDeliveryHandlerTest {
     private class RecordingTaskNotificationController : TaskNotificationController {
         val overdueTaskIds = mutableListOf<String>()
         val reminders = mutableListOf<Pair<String, ReminderKind>>()
+        val clearedTaskIds = mutableListOf<String>()
 
         override fun showReminder(task: Task, kind: ReminderKind) {
             reminders += task.id to kind
@@ -147,10 +197,14 @@ class ReminderDeliveryHandlerTest {
         override fun dismissCurrent(taskId: String) = Unit
         override fun acknowledgeOverdue(taskId: String) = Unit
         override fun clearOverdueAcknowledgment(taskId: String) = Unit
-        override fun clearTask(taskId: String) = Unit
+        override fun clearTask(taskId: String) {
+            clearedTaskIds += taskId
+            reminders.removeAll { it.first == taskId }
+        }
     }
 
     private companion object {
         const val NOW = 1_797_332_400_000L
+        const val TWO_HOURS = 2 * 60 * 60 * 1000L
     }
 }

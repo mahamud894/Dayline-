@@ -50,15 +50,17 @@ class SmartWakeCoordinator(
     private val delivery: DailySummaryDelivery,
     private val cancelFallback: suspend () -> Unit,
     private val clock: Clock = Clock.systemDefaultZone(),
-    private val zoneId: ZoneId = clock.zone
+    private val zoneId: ZoneId? = null
 ) {
     suspend fun onUnlock(
-        now: ZonedDateTime = ZonedDateTime.now(clock).withZoneSameInstant(zoneId)
+        now: ZonedDateTime = ZonedDateTime.now(clock)
+            .withZoneSameInstant(zoneId ?: ZoneId.systemDefault())
     ): Boolean {
         val userSettings = settings()
         if (!userSettings.morningSummaryEnabled) return false
 
-        val localNow = now.withZoneSameInstant(zoneId).toLocalDateTime()
+        val currentZoneId = zoneId ?: ZoneId.systemDefault()
+        val localNow = now.withZoneSameInstant(currentZoneId).toLocalDateTime()
         val summaryToday = localNow.toLocalDate().atTime(userSettings.morningSummaryTime)
         val summaryDateTime = if (localNow.isAfter(summaryToday)) {
             summaryToday.plusDays(1)
@@ -71,11 +73,13 @@ class SmartWakeCoordinator(
     }
 
     suspend fun onFallback(
-        now: ZonedDateTime = ZonedDateTime.now(clock).withZoneSameInstant(zoneId)
+        now: ZonedDateTime = ZonedDateTime.now(clock)
+            .withZoneSameInstant(zoneId ?: ZoneId.systemDefault())
     ): Boolean {
         val userSettings = settings()
         if (!userSettings.morningSummaryEnabled) return false
-        val localNow = now.withZoneSameInstant(zoneId).toLocalDateTime()
+        val currentZoneId = zoneId ?: ZoneId.systemDefault()
+        val localNow = now.withZoneSameInstant(currentZoneId).toLocalDateTime()
         val summaryDateTime = localNow.toLocalDate().atTime(userSettings.morningSummaryTime)
         if (localNow.isBefore(summaryDateTime)) return false
         return deliverOnce(summaryDateTime.toLocalDate())

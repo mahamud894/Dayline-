@@ -15,12 +15,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskStatus
+import com.dayline.domain.reminders.ReminderScheduleStatus
+import com.dayline.ui.common.ReminderScheduleNotice
 
 @Composable
 fun TasksScreen(
     tasks: List<Task>,
     onEditTask: (Task) -> Unit,
     onCompleteTask: (Task) -> Unit,
+    reminderScheduleStatus: ReminderScheduleStatus?,
     modifier: Modifier = Modifier
 ) {
     val activeTasks = tasks.filter { it.status != TaskStatus.COMPLETED }
@@ -53,6 +56,7 @@ fun TasksScreen(
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
             )
+            ReminderScheduleNotice(reminderScheduleStatus)
         }
         if (activeTasks.isEmpty()) {
             item {

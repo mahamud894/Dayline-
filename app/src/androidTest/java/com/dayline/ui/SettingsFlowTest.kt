@@ -31,6 +31,7 @@ class SettingsFlowTest {
         composeRule.onNodeWithTag("nav-profile").performClick()
         composeRule.onNodeWithTag("open-settings").performClick()
         composeRule.onNodeWithText("Morning summary").assertIsDisplayed()
+        composeRule.onNodeWithTag("summary-schedule-status").assertIsDisplayed()
         composeRule.onNodeWithTag("summary-time").performTextClearance()
         composeRule.onNodeWithTag("summary-time").performTextInput("09:15")
         composeRule.onNodeWithTag("save-summary-time").performClick()

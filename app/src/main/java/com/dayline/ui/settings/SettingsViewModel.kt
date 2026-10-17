@@ -40,8 +40,26 @@ class SettingsViewModel(
 
     private val updateMutex = Mutex()
 
+    init {
+        refreshSummaryScheduleStatus()
+    }
+
     fun setSummaryEnabled(enabled: Boolean) {
         updateSettings { it.copy(morningSummaryEnabled = enabled) }
+    }
+
+    fun refreshSummaryScheduleStatus() {
+        viewModelScope.launch {
+            updateMutex.withLock {
+                try {
+                    mutableScheduleStatus.value =
+                        summaryScheduler.schedule(settingsStore.settings.first())
+                } catch (exception: Exception) {
+                    mutableError.value =
+                        "Unable to check summary schedule: ${exception.message ?: "unknown error"}"
+                }
+            }
+        }
     }
 
     fun setCalendarImportEnabled(enabled: Boolean) {

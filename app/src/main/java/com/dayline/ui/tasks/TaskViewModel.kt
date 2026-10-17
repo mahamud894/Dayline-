@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dayline.data.TaskRepository
 import com.dayline.domain.reminders.ReminderScheduler
+import com.dayline.domain.reminders.ReminderScheduleStatus
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskPriority
 import com.dayline.domain.model.TaskStatus
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -35,6 +37,30 @@ class TaskViewModel(
 
     private val mutableSaveError = MutableStateFlow<String?>(null)
     val saveError: StateFlow<String?> = mutableSaveError.asStateFlow()
+
+    private val mutableReminderScheduleStatus =
+        MutableStateFlow<ReminderScheduleStatus?>(null)
+    val reminderScheduleStatus: StateFlow<ReminderScheduleStatus?> =
+        mutableReminderScheduleStatus.asStateFlow()
+
+    init {
+        refreshReminderScheduleStatus()
+    }
+
+    fun refreshReminderScheduleStatus() {
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            val task = repository.observeTasks().first().firstOrNull {
+                it.status == TaskStatus.ACTIVE &&
+                    it.dueAtEpochMillis?.let { dueAt -> dueAt > now } == true
+            }
+            mutableReminderScheduleStatus.value = if (task == null) {
+                null
+            } else {
+                reminderScheduler.schedule(task)
+            }
+        }
+    }
 
     fun saveTask(
         existing: Task?,
@@ -65,18 +91,38 @@ class TaskViewModel(
 
         mutableSaveError.value = null
         viewModelScope.launch {
+            val status = when {
+                existing?.status == TaskStatus.OVERDUE &&
+                    (dueAt == null || dueAt > System.currentTimeMillis()) -> TaskStatus.ACTIVE
+                else -> existing?.status ?: TaskStatus.ACTIVE
+            }
             val task = Task(
                 id = existing?.id ?: UUID.randomUUID().toString(),
                 title = cleanTitle,
                 notes = notes.trim().ifEmpty { null },
                 dueAtEpochMillis = dueAt,
                 priority = priority,
-                status = existing?.status ?: TaskStatus.ACTIVE,
+                status = status,
                 quietModeOverrideAllowed = quietModeOverrideAllowed,
-                completedAtEpochMillis = existing?.completedAtEpochMillis
+                completedAtEpochMillis = if (status == TaskStatus.ACTIVE) {
+                    null
+                } else {
+                    existing?.completedAtEpochMillis
+                }
             )
+            if (
+                existing?.status == TaskStatus.OVERDUE &&
+                task.status == TaskStatus.ACTIVE
+            ) {
+                reminderActionHandler.handle(task.id, ReminderAction.DISMISS)
+            }
             repository.saveTask(task)
-            if (task.status == TaskStatus.ACTIVE) reminderScheduler.schedule(task)
+            mutableReminderScheduleStatus.value =
+                if (task.status == TaskStatus.ACTIVE) {
+                    reminderScheduler.schedule(task)
+                } else {
+                    null
+                }
             onSaved()
         }
     }

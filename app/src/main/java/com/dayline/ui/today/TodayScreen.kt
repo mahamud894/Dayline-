@@ -38,10 +38,12 @@ import com.dayline.domain.habits.isScheduledFor
 import com.dayline.domain.model.Habit
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskStatus
+import com.dayline.domain.reminders.ReminderScheduleStatus
 import com.dayline.domain.summary.SummaryCategory
 import com.dayline.domain.summary.SummaryItem
 import com.dayline.domain.summary.rankDailySummary
 import com.dayline.ui.habits.HabitCard
+import com.dayline.ui.common.ReminderScheduleNotice
 import com.dayline.ui.tasks.formatTaskDueAt
 import java.time.Instant
 import java.time.LocalDate
@@ -58,6 +60,7 @@ fun TodayScreen(
     calendarCommitments: List<CalendarCommitment>,
     calendarImportEnabled: Boolean,
     calendarUnavailableMessage: String?,
+    reminderScheduleStatus: ReminderScheduleStatus?,
     onCompleteHabit: (Habit) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -102,6 +105,12 @@ fun TodayScreen(
         contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 112.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+        if (
+            reminderScheduleStatus == ReminderScheduleStatus.WORK_MANAGER_FALLBACK ||
+            reminderScheduleStatus == ReminderScheduleStatus.NOTIFICATION_PERMISSION_REQUIRED
+        ) {
+            item { ReminderScheduleNotice(reminderScheduleStatus) }
+        }
         item {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(

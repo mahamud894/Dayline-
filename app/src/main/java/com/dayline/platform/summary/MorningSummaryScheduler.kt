@@ -29,7 +29,7 @@ enum class MorningSummaryScheduleStatus {
 class MorningSummaryScheduler(
     context: Context,
     private val clock: Clock = Clock.systemDefaultZone(),
-    private val zoneId: ZoneId = clock.zone,
+    private val zoneId: ZoneId? = null,
     private val exactAlarmAccess: () -> Boolean = {
         Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
             requireService<AlarmManager>(context, Context.ALARM_SERVICE)
@@ -51,10 +51,11 @@ class MorningSummaryScheduler(
             return MorningSummaryScheduleStatus.NOTIFICATION_PERMISSION_REQUIRED
         }
 
-        val now = LocalDateTime.ofInstant(clock.instant(), zoneId)
+        val currentZoneId = zoneId ?: ZoneId.systemDefault()
+        val now = LocalDateTime.ofInstant(clock.instant(), currentZoneId)
         var fallbackAt = now.toLocalDate().atTime(settings.morningSummaryTime)
         if (fallbackAt.isBefore(now)) fallbackAt = fallbackAt.plusDays(1)
-        val triggerAt = fallbackAt.atZone(zoneId).toInstant().toEpochMilli()
+        val triggerAt = fallbackAt.atZone(currentZoneId).toInstant().toEpochMilli()
         if (exactAlarmAccess()) {
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,

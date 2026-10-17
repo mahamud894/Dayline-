@@ -8,6 +8,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.TimeZone
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -83,6 +84,32 @@ class SmartWakeReceiverTest {
         assertTrue(fixture.coordinator.onUnlock(at("2026-10-18T23:30:00")))
 
         assertEquals(listOf(LocalDate.of(2026, 10, 19)), fixture.deliveredDates)
+    }
+
+    @Test
+    fun unlockUsesCurrentSystemZoneAfterTimezoneChanges() = runTest {
+        val originalTimeZone = TimeZone.getDefault()
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+            val deliveredDates = mutableListOf<LocalDate>()
+            val coordinator = SmartWakeCoordinator(
+                settings = { UserSettings(morningSummaryTime = LocalTime.of(9, 0)) },
+                gate = InMemorySummaryDeliveryGate(),
+                delivery = { date -> deliveredDates += date },
+                cancelFallback = {},
+                clock = Clock.fixed(
+                    Instant.parse("2026-10-18T08:30:00Z"),
+                    ZoneId.of("UTC")
+                )
+            )
+
+            TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"))
+
+            assertFalse(coordinator.onUnlock())
+            assertTrue(deliveredDates.isEmpty())
+        } finally {
+            TimeZone.setDefault(originalTimeZone)
+        }
     }
 
     @Test

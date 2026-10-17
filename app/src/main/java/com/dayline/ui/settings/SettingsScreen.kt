@@ -134,7 +134,7 @@ fun SettingsScreen(
                             "Android may delay summaries. Allow exact alarms for on-time delivery."
                         MorningSummaryScheduleStatus.DISABLED -> "Daily summary is turned off."
                         MorningSummaryScheduleStatus.NOTIFICATION_PERMISSION_REQUIRED ->
-                            "Allow notifications to receive your daily summary."
+                            "Allow notifications to receive your daily summary and deadline reminders."
                         null -> "Smart Wake starts one hour before this time; the notification is the fallback."
                     },
                     color = Color(0xFFC2C7D3),

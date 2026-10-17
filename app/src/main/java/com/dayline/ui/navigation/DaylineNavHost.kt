@@ -99,7 +99,12 @@ fun DaylineNavHost(container: AppContainer) {
     var calendarRefreshKey by remember { mutableIntStateOf(0) }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) calendarRefreshKey++
+            if (event == Lifecycle.Event.ON_RESUME) {
+                calendarRefreshKey++
+                habitViewModel.refreshToday()
+                taskViewModel.refreshReminderScheduleStatus()
+                settingsViewModel.refreshSummaryScheduleStatus()
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -118,6 +123,7 @@ fun DaylineNavHost(container: AppContainer) {
     val today by habitViewModel.today.collectAsState()
     val completedHabitIds by habitViewModel.completedHabitIds.collectAsState()
     val saveError by taskViewModel.saveError.collectAsState()
+    val reminderScheduleStatus by taskViewModel.reminderScheduleStatus.collectAsState()
     val habitSaveError by habitViewModel.saveError.collectAsState()
     val userSettings by settingsViewModel.settings.collectAsState()
     val summaryScheduleStatus by settingsViewModel.scheduleStatus.collectAsState()
@@ -263,11 +269,13 @@ fun DaylineNavHost(container: AppContainer) {
                     calendarCommitments = calendarState.commitments,
                     calendarImportEnabled = userSettings.calendarImportEnabled,
                     calendarUnavailableMessage = calendarState.unavailableMessage,
+                    reminderScheduleStatus = reminderScheduleStatus,
                     onCompleteHabit = { habitViewModel.completeHabit(it.id) },
                     modifier = Modifier.padding(contentPadding)
                 )
                 Destination.TASKS -> TasksScreen(
                     tasks = tasks,
+                    reminderScheduleStatus = reminderScheduleStatus,
                     onEditTask = { task ->
                         editingTaskId = task.id
                         taskViewModel.clearSaveError()

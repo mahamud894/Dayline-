@@ -14,6 +14,17 @@ class ReminderDeliveryHandler(
 ) {
     suspend fun deliver(taskId: String, kind: ReminderKind, triggerAtEpochMillis: Long) {
         require(taskId.isNotBlank()) { "Task id is required for reminder delivery." }
+        checkNotNull(repository.getTask(taskId)) { "Task not found: $taskId" }
+        ReminderOperationLocks.withTaskLock(taskId) {
+            deliverLocked(taskId, kind, triggerAtEpochMillis)
+        }
+    }
+
+    private suspend fun deliverLocked(
+        taskId: String,
+        kind: ReminderKind,
+        triggerAtEpochMillis: Long
+    ) {
         val task = checkNotNull(repository.getTask(taskId)) { "Task not found: $taskId" }
         if (task.status == TaskStatus.COMPLETED) {
             scheduler.cancel(taskId)

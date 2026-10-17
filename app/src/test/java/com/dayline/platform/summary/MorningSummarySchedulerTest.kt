@@ -7,6 +7,8 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
+import java.util.TimeZone
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -89,6 +91,35 @@ class MorningSummarySchedulerTest {
             LocalDate.of(2026, 3, 8).atTime(3, 30).atZone(zone).toInstant().toEpochMilli(),
             work.triggerAtEpochMillis
         )
+    }
+
+    @Test
+    fun schedulingUsesSystemZoneAfterTimezoneChanges() = runTest {
+        val originalTimeZone = TimeZone.getDefault()
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+            val now = Instant.parse("2026-10-18T08:30:00Z")
+            val work = RecordingSummaryFallbackWorkEnqueuer()
+            val scheduler = MorningSummaryScheduler(
+                context = RuntimeEnvironment.getApplication(),
+                clock = Clock.fixed(now, ZoneOffset.UTC),
+                exactAlarmAccess = { false },
+                notificationAccess = { true },
+                workEnqueuer = work
+            )
+
+            TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"))
+            scheduler.schedule(
+                UserSettings(morningSummaryTime = LocalTime.of(9, 0))
+            )
+
+            assertEquals(
+                Instant.parse("2026-10-18T16:00:00Z").toEpochMilli(),
+                work.triggerAtEpochMillis
+            )
+        } finally {
+            TimeZone.setDefault(originalTimeZone)
+        }
     }
 
     @Test
