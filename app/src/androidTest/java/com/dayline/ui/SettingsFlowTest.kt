@@ -1,6 +1,7 @@
 package com.dayline.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -52,5 +53,19 @@ class SettingsFlowTest {
             LocalTime.of(9, 15),
             runBlocking { app.container.userSettingsStore.settings.first().morningSummaryTime }
         )
+    }
+
+    @Test
+    fun calendarImportIsOptionalAndDoesNotReplaceManualTasks() {
+        val app = composeRule.activity.application as DaylineApp
+        runBlocking { app.container.userSettingsStore.save(UserSettings()) }
+
+        composeRule.onNodeWithTag("nav-profile").performClick()
+        composeRule.onNodeWithTag("open-settings").performClick()
+
+        composeRule.onNodeWithTag("calendar-import-enabled").assertIsOff()
+        composeRule.onNodeWithText("Optional calendar import").assertIsDisplayed()
+        composeRule.onNodeWithText("Read-only. Manual tasks remain available without calendar access.")
+            .assertIsDisplayed()
     }
 }

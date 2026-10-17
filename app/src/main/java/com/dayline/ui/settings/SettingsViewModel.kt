@@ -44,6 +44,27 @@ class SettingsViewModel(
         updateSettings { it.copy(morningSummaryEnabled = enabled) }
     }
 
+    fun setCalendarImportEnabled(enabled: Boolean) {
+        mutableError.value = null
+        viewModelScope.launch {
+            updateMutex.withLock {
+                try {
+                    val updated = settingsStore.settings.first()
+                        .copy(calendarImportEnabled = enabled)
+                    settingsStore.save(updated)
+                } catch (exception: Exception) {
+                    mutableError.value =
+                        "Unable to update calendar settings: ${exception.message ?: "unknown error"}"
+                }
+            }
+        }
+    }
+
+    fun reportCalendarPermissionDenied() {
+        mutableError.value =
+            "Calendar access wasn't granted. Manual tasks remain available without calendar access."
+    }
+
     fun saveSummaryTime(value: String) {
         val time = try {
             LocalTime.parse(value.trim())

@@ -1,10 +1,14 @@
 package com.dayline.ui.navigation
 
+import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
@@ -14,9 +18,12 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -29,8 +36,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dayline.AppContainer
+import com.dayline.platform.calendar.CalendarAccessUnavailableException
+import com.dayline.platform.calendar.CalendarCommitment
 import com.dayline.domain.model.Task
 import com.dayline.ui.habits.HabitEditorScreen
 import com.dayline.ui.habits.HabitViewModel
@@ -42,6 +54,8 @@ import com.dayline.ui.tasks.TaskEditorScreen
 import com.dayline.ui.tasks.TaskViewModel
 import com.dayline.ui.tasks.TasksScreen
 import com.dayline.ui.today.TodayScreen
+import java.time.ZoneId
+import kotlinx.coroutines.CancellationException
 
 private enum class Destination(val label: String) {
     TODAY("Today"),
@@ -50,6 +64,11 @@ private enum class Destination(val label: String) {
     PROFILE("Profile"),
     SETTINGS("Settings")
 }
+
+private data class CalendarCommitmentsState(
+    val commitments: List<CalendarCommitment> = emptyList(),
+    val unavailableMessage: String? = null
+)
 
 @Composable
 fun DaylineNavHost(container: AppContainer) {
@@ -76,6 +95,24 @@ fun DaylineNavHost(container: AppContainer) {
         }
     )
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var calendarRefreshKey by remember { mutableIntStateOf(0) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) calendarRefreshKey++
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    val calendarPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            settingsViewModel.setCalendarImportEnabled(true)
+        } else {
+            settingsViewModel.reportCalendarPermissionDenied()
+        }
+    }
     val tasks by taskViewModel.tasks.collectAsState()
     val habits by habitViewModel.habits.collectAsState()
     val today by habitViewModel.today.collectAsState()
@@ -85,6 +122,9 @@ fun DaylineNavHost(container: AppContainer) {
     val userSettings by settingsViewModel.settings.collectAsState()
     val summaryScheduleStatus by settingsViewModel.scheduleStatus.collectAsState()
     val settingsError by settingsViewModel.error.collectAsState()
+    val calendarPermissionGranted =
+        context.checkSelfPermission(Manifest.permission.READ_CALENDAR) ==
+            PackageManager.PERMISSION_GRANTED
     var selected by rememberSaveable { mutableStateOf(Destination.TODAY) }
     var isEditorVisible by rememberSaveable { mutableStateOf(false) }
     var editingTaskId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -92,6 +132,35 @@ fun DaylineNavHost(container: AppContainer) {
     var editingHabitId by rememberSaveable { mutableStateOf<String?>(null) }
     val editingTask = editingTaskId?.let { id -> tasks.firstOrNull { it.id == id } }
     val editingHabit = editingHabitId?.let { id -> habits.firstOrNull { it.id == id } }
+    val calendarState by produceState(
+        initialValue = CalendarCommitmentsState(),
+        userSettings.calendarImportEnabled,
+        selected,
+        today,
+        calendarRefreshKey
+    ) {
+        if (!userSettings.calendarImportEnabled || selected != Destination.TODAY) {
+            value = CalendarCommitmentsState()
+        } else {
+            val zoneId = ZoneId.systemDefault()
+            val start = today.atStartOfDay(zoneId).toInstant().toEpochMilli()
+            val end = today.plusDays(1).atStartOfDay(zoneId).toInstant().toEpochMilli()
+            try {
+                value = CalendarCommitmentsState(
+                    commitments = container.calendarReader.readBetween(start, end)
+                )
+            } catch (exception: CalendarAccessUnavailableException) {
+                value = CalendarCommitmentsState(unavailableMessage = exception.message)
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                value = CalendarCommitmentsState(
+                    unavailableMessage =
+                        "Calendar commitments couldn't be loaded: ${exception.message ?: "unknown error"}"
+                )
+            }
+        }
+    }
 
     if (isHabitEditorVisible) {
         HabitEditorScreen(
@@ -191,6 +260,9 @@ fun DaylineNavHost(container: AppContainer) {
                     habits = habits,
                     today = today,
                     completedHabitIds = completedHabitIds,
+                    calendarCommitments = calendarState.commitments,
+                    calendarImportEnabled = userSettings.calendarImportEnabled,
+                    calendarUnavailableMessage = calendarState.unavailableMessage,
                     onCompleteHabit = { habitViewModel.completeHabit(it.id) },
                     modifier = Modifier.padding(contentPadding)
                 )
@@ -227,10 +299,18 @@ fun DaylineNavHost(container: AppContainer) {
                 )
                 Destination.SETTINGS -> SettingsScreen(
                     settings = userSettings,
+                    calendarPermissionGranted = calendarPermissionGranted,
                     scheduleStatus = summaryScheduleStatus,
                     error = settingsError,
                     onSummaryEnabledChange = settingsViewModel::setSummaryEnabled,
                     onSaveSummaryTime = settingsViewModel::saveSummaryTime,
+                    onCalendarImportChange = { enabled ->
+                        if (enabled) {
+                            calendarPermissionLauncher.launch(Manifest.permission.READ_CALENDAR)
+                        } else {
+                            settingsViewModel.setCalendarImportEnabled(false)
+                        }
+                    },
                     onClearError = settingsViewModel::clearError,
                     onBack = { selected = Destination.PROFILE },
                     onOpenNotificationSettings = {
@@ -260,6 +340,12 @@ fun DaylineNavHost(container: AppContainer) {
                     onOpenDndSettings = {
                         context.startActivity(
                             Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                        )
+                    },
+                    onOpenCalendarPermissionSettings = {
+                        context.startActivity(
+                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                .setData(Uri.parse("package:${context.packageName}"))
                         )
                     },
                     modifier = Modifier.padding(contentPadding)

@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dayline.platform.calendar.CalendarCommitment
 import com.dayline.domain.habits.isScheduledFor
 import com.dayline.domain.model.Habit
 import com.dayline.domain.model.Task
@@ -54,6 +55,9 @@ fun TodayScreen(
     habits: List<Habit>,
     today: LocalDate,
     completedHabitIds: Set<String>,
+    calendarCommitments: List<CalendarCommitment>,
+    calendarImportEnabled: Boolean,
+    calendarUnavailableMessage: String?,
     onCompleteHabit: (Habit) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -87,6 +91,9 @@ fun TodayScreen(
                 it.dueAtEpochMillis?.let { due -> due > now.toInstant().toEpochMilli() } == true
         }
         .minByOrNull { it.dueAtEpochMillis ?: Long.MAX_VALUE }
+    val nextCalendarCommitment = calendarCommitments
+        .filter { it.startAtEpochMillis > now.toInstant().toEpochMilli() }
+        .minByOrNull(CalendarCommitment::startAtEpochMillis)
 
     LazyColumn(
         modifier = modifier
@@ -123,7 +130,26 @@ fun TodayScreen(
             )
         }
         item {
-            NextCommitmentCard(nextCommitment)
+            NextCommitmentCard(nextCommitment, nextCalendarCommitment)
+        }
+        if (calendarImportEnabled) {
+            item {
+                SectionHeader(
+                    title = "Calendar commitments",
+                    detail = "${calendarCommitments.size} TODAY"
+                )
+            }
+            if (calendarUnavailableMessage != null) {
+                item {
+                    EmptyCard(calendarUnavailableMessage, testTag = "today-calendar-unavailable")
+                }
+            } else if (calendarCommitments.isEmpty()) {
+                item { EmptyCard("No calendar commitments today.") }
+            } else {
+                items(calendarCommitments, key = CalendarCommitment::id) { commitment ->
+                    CalendarCommitmentCard(commitment)
+                }
+            }
         }
         item {
             SectionHeader(title = "Focus queue", detail = "TOP PRIORITIES")
@@ -240,7 +266,24 @@ private fun ProgressRing(completed: Int, total: Int) {
 }
 
 @Composable
-private fun NextCommitmentCard(task: Task?) {
+private fun NextCommitmentCard(
+    task: Task?,
+    calendarCommitment: CalendarCommitment?
+) {
+    val taskDueAt = task?.dueAtEpochMillis
+    val showCalendarEvent = calendarCommitment != null &&
+        (taskDueAt == null || calendarCommitment.startAtEpochMillis < taskDueAt)
+    val title = if (showCalendarEvent) {
+        calendarCommitment?.title.orEmpty()
+    } else {
+        task?.title ?: "Nothing on the radar"
+    }
+    val detail = if (showCalendarEvent) {
+        formatCalendarCommitmentTime(requireNotNull(calendarCommitment))
+    } else {
+        task?.let { formatTaskDueAt(it.dueAtEpochMillis) }
+            ?: "Your day is open. Keep it that way or add a task."
+    }
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -250,21 +293,70 @@ private fun NextCommitmentCard(task: Task?) {
             modifier = Modifier.padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text("Next commitment", color = Color(0xFFC7A2FF), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             Text(
-                text = task?.title ?: "Nothing on the radar",
+                if (showCalendarEvent) "Next calendar event" else "Next commitment",
+                color = Color(0xFFC7A2FF),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = title,
                 color = Color(0xFFF4F5FF),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = task?.let { formatTaskDueAt(it.dueAtEpochMillis) }
-                    ?: "Your day is open. Keep it that way or add a task.",
+                text = detail,
                 color = Color(0xFFD0C7E0),
                 fontSize = 13.sp
             )
         }
     }
+}
+
+@Composable
+private fun CalendarCommitmentCard(commitment: CalendarCommitment) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("calendar-commitment-${commitment.id}"),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF171D2A))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                "CALENDAR EVENT",
+                color = Color(0xFF59F5D8),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                commitment.title,
+                color = Color(0xFFF4F5FF),
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                formatCalendarCommitmentTime(commitment),
+                color = Color(0xFFC2C7D3),
+                fontSize = 12.sp
+            )
+        }
+    }
+}
+
+private fun formatCalendarCommitmentTime(commitment: CalendarCommitment): String {
+    val formatter = DateTimeFormatter.ofPattern("h:mm a")
+    val zoneId = ZoneId.systemDefault()
+    val start = Instant.ofEpochMilli(commitment.startAtEpochMillis)
+        .atZone(zoneId)
+        .format(formatter)
+    val end = commitment.endAtEpochMillis?.let {
+        Instant.ofEpochMilli(it).atZone(zoneId).format(formatter)
+    }
+    return if (end == null) start else "$start - $end"
 }
 
 @Composable
@@ -355,9 +447,13 @@ private fun DeadlineCard(task: Task) {
 }
 
 @Composable
-private fun EmptyCard(message: String) {
+private fun EmptyCard(message: String, testTag: String? = null) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (testTag == null) Modifier else Modifier.testTag(testTag)
+            ),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF151923))
     ) {

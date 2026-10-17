@@ -8,6 +8,7 @@ import com.dayline.data.RoomTaskRepository
 import com.dayline.data.TaskRepository
 import com.dayline.data.local.DaylineDatabase
 import com.dayline.data.local.UserSettingsStore
+import com.dayline.platform.calendar.AndroidCalendarReader
 import com.dayline.platform.notifications.DaylineNotificationFactory
 import com.dayline.platform.reminders.AndroidReminderScheduler
 import com.dayline.platform.reminders.ReminderActionHandler
@@ -29,6 +30,13 @@ class AppContainer(application: Application) {
     val taskRepository: TaskRepository = RoomTaskRepository(database)
     val habitRepository: HabitRepository = RoomHabitRepository(database)
     val userSettingsStore = UserSettingsStore(application)
+    val calendarReader = AndroidCalendarReader(
+        contentResolver = application.contentResolver,
+        hasReadCalendarPermission = {
+            application.checkSelfPermission(android.Manifest.permission.READ_CALENDAR) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+    )
     val notificationFactory = DaylineNotificationFactory(application)
     val reminderScheduler = AndroidReminderScheduler(
         context = application,

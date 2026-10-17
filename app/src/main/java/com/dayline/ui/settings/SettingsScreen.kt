@@ -33,15 +33,18 @@ import com.dayline.platform.summary.MorningSummaryScheduleStatus
 @Composable
 fun SettingsScreen(
     settings: UserSettings,
+    calendarPermissionGranted: Boolean,
     scheduleStatus: MorningSummaryScheduleStatus?,
     error: String?,
     onSummaryEnabledChange: (Boolean) -> Unit,
     onSaveSummaryTime: (String) -> Unit,
+    onCalendarImportChange: (Boolean) -> Unit,
     onClearError: () -> Unit,
     onBack: () -> Unit,
     onOpenNotificationSettings: () -> Unit,
     onOpenExactAlarmSettings: () -> Unit,
     onOpenDndSettings: () -> Unit,
+    onOpenCalendarPermissionSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var summaryTime by remember(settings.morningSummaryTime) {
@@ -138,6 +141,55 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.testTag("summary-schedule-status")
                 )
+            }
+        }
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF171D2A))
+        ) {
+            Column(
+                modifier = Modifier.padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Optional calendar import",
+                            color = Color(0xFFF4F5FF),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            "Read-only. Manual tasks remain available without calendar access.",
+                            color = Color(0xFFC2C7D3),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    Switch(
+                        checked = settings.calendarImportEnabled,
+                        onCheckedChange = onCalendarImportChange,
+                        modifier = Modifier.testTag("calendar-import-enabled")
+                    )
+                }
+                if (settings.calendarImportEnabled && !calendarPermissionGranted) {
+                    Text(
+                        "Calendar access is unavailable. Grant permission to show events; your manual tasks are unchanged.",
+                        color = Color(0xFFFFC27A),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.testTag("calendar-permission-status")
+                    )
+                    Button(
+                        onClick = onOpenCalendarPermissionSettings,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("open-calendar-permission-settings")
+                    ) {
+                        Text("Manage calendar access")
+                    }
+                }
             }
         }
         error?.let {
