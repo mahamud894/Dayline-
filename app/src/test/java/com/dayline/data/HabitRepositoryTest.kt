@@ -54,6 +54,21 @@ class HabitRepositoryTest {
         assertEquals(1, database.habitCompletionDao().countForHabitAndDate(habit.id, date.toString()))
     }
 
+    @Test
+    fun completingTheSameLocalDateTwiceIncrementsStreakOnlyOnce() = runTest {
+        val habit = sampleHabit()
+        val date = LocalDate.of(2026, 10, 18)
+        repository.saveHabit(habit)
+
+        repository.completeForDate(habit.id, date)
+        repository.completeForDate(habit.id, date)
+
+        assertEquals(
+            habit.copy(currentStreak = 1, bestStreak = 1),
+            repository.observeHabits().first().single()
+        )
+    }
+
     private fun sampleHabit() = Habit(
         id = "habit-1",
         title = "Morning stretch",

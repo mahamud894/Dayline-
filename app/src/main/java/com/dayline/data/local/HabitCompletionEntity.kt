@@ -34,6 +34,9 @@ interface HabitCompletionDao {
     @Query("SELECT localDate FROM habit_completions WHERE habitId = :habitId ORDER BY localDate")
     fun observeDates(habitId: String): Flow<List<String>>
 
+    @Query("SELECT localDate FROM habit_completions WHERE habitId = :habitId ORDER BY localDate")
+    suspend fun getDates(habitId: String): List<String>
+
     @Query("SELECT COUNT(*) FROM habit_completions WHERE habitId = :habitId AND localDate = :localDate")
     suspend fun countForHabitAndDate(habitId: String, localDate: String): Int
 

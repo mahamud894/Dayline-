@@ -1,7 +1,9 @@
 package com.dayline.data
 
+import androidx.room.withTransaction
 import com.dayline.data.local.DaylineDatabase
 import com.dayline.data.local.HabitEntity
+import com.dayline.domain.habits.calculateStreak
 import com.dayline.domain.model.Habit
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
@@ -22,7 +24,18 @@ class RoomHabitRepository(private val database: DaylineDatabase) : HabitReposito
     }
 
     override suspend fun completeForDate(id: String, date: LocalDate) {
-        check(database.habitDao().getById(id) != null) { "Habit not found: $id" }
-        database.habitCompletionDao().record(id, date)
+        database.withTransaction {
+            val habitEntity = checkNotNull(database.habitDao().getById(id)) {
+                "Habit not found: $id"
+            }
+            database.habitCompletionDao().record(id, date)
+            val completedDates = database.habitCompletionDao().getDates(id)
+                .map(LocalDate::parse)
+                .toSet()
+            val streak = calculateStreak(habitEntity.toDomain(), completedDates, date)
+            check(database.habitDao().updateStreak(id, streak.current, streak.best) == 1) {
+                "Habit disappeared while recording completion: $id"
+            }
+        }
     }
 }
