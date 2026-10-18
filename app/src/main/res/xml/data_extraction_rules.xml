@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12 and newer. Same scope as backup_rules.xml. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="database" path="dayline.db" />
+        <include domain="database" path="dayline.db-wal" />
+        <include domain="database" path="dayline.db-shm" />
+        <include domain="file" path="datastore/dayline_settings.preferences_pb" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="database" path="dayline.db" />
+        <include domain="database" path="dayline.db-wal" />
+        <include domain="database" path="dayline.db-shm" />
+        <include domain="file" path="datastore/dayline_settings.preferences_pb" />
+    </device-transfer>
+</data-extraction-rules>

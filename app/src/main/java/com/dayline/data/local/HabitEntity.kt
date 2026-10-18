@@ -2,6 +2,7 @@ package com.dayline.data.local
 
 import androidx.room.Dao
 import androidx.room.Entity
+import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Upsert
@@ -98,4 +99,10 @@ interface HabitDao {
     /** Completions go with it through the ON DELETE CASCADE foreign key. */
     @Query("DELETE FROM habits WHERE id = :id")
     suspend fun deleteById(id: String): Int
+
+    @Insert
+    suspend fun insertAll(habits: List<HabitEntity>)
+
+    @Query("DELETE FROM habits")
+    suspend fun deleteAll()
 }

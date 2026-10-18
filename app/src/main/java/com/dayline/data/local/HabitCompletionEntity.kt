@@ -43,6 +43,15 @@ interface HabitCompletionDao {
     @Query("SELECT COUNT(*) FROM habit_completions WHERE habitId = :habitId AND localDate = :localDate")
     suspend fun countForHabitAndDate(habitId: String, localDate: String): Int
 
+    @Query("SELECT * FROM habit_completions ORDER BY habitId, localDate")
+    suspend fun getAll(): List<HabitCompletionEntity>
+
+    @Insert
+    suspend fun insertAll(completions: List<HabitCompletionEntity>)
+
+    @Query("DELETE FROM habit_completions")
+    suspend fun deleteAll()
+
     suspend fun record(habitId: String, date: LocalDate) {
         insert(HabitCompletionEntity(habitId, date.toString()))
     }

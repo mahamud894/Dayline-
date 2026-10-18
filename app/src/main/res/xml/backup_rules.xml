@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older. Only user data; reminder bookkeeping is rebuilt on launch. -->
+<full-backup-content>
+    <include domain="database" path="dayline.db" />
+    <include domain="database" path="dayline.db-wal" />
+    <include domain="database" path="dayline.db-shm" />
+    <include domain="file" path="datastore/dayline_settings.preferences_pb" />
+</full-backup-content>

@@ -8,13 +8,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +48,10 @@ fun SettingsScreen(
     onOpenExactAlarmSettings: () -> Unit,
     onOpenDndSettings: () -> Unit,
     onOpenCalendarPermissionSettings: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    backupMessage: String? = null,
+    onExportBackup: () -> Unit = {},
+    onRestoreBackup: () -> Unit = {}
 ) {
     var summaryTime by remember(settings.morningSummaryTime) {
         mutableStateOf(settings.morningSummaryTime.toString())
@@ -192,6 +198,11 @@ fun SettingsScreen(
                 }
             }
         }
+        BackupCard(
+            message = backupMessage,
+            onExport = onExportBackup,
+            onRestore = onRestoreBackup
+        )
         error?.let {
             Text(
                 text = it,
@@ -222,6 +233,80 @@ fun SettingsScreen(
             color = Color(0xFFC2C7D3),
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(bottom = 12.dp)
+        )
+    }
+}
+
+@Composable
+private fun BackupCard(
+    message: String?,
+    onExport: () -> Unit,
+    onRestore: () -> Unit
+) {
+    var confirmingRestore by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF171D2A))
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("Backup", color = Color(0xFFF4F5FF), fontWeight = FontWeight.SemiBold)
+            Text(
+                "Save your tasks, habits, streaks and settings to a file you keep, " +
+                    "or restore them on a new phone.",
+                color = Color(0xFFC2C7D3),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Button(
+                onClick = onExport,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("export-backup")
+            ) {
+                Text("Export backup")
+            }
+            OutlinedButton(
+                onClick = { confirmingRestore = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("restore-backup")
+            ) {
+                Text("Restore from backup", color = Color(0xFFC7A2FF))
+            }
+            message?.let {
+                Text(
+                    text = it,
+                    color = Color(0xFFB7FF4A),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.testTag("backup-message")
+                )
+            }
+        }
+    }
+    if (confirmingRestore) {
+        AlertDialog(
+            onDismissRequest = { confirmingRestore = false },
+            title = { Text("Restore from backup?") },
+            text = {
+                Text(
+                    "Everything currently in Dayline will be replaced by the backup. " +
+                        "This can't be undone."
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmingRestore = false
+                        onRestore()
+                    },
+                    modifier = Modifier.testTag("restore-confirm")
+                ) { Text("Choose file") }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmingRestore = false }) { Text("Cancel") }
+            }
         )
     }
 }

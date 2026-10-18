@@ -3,6 +3,8 @@ package com.dayline.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dayline.data.backup.BackupFormatException
+import com.dayline.data.backup.DaylineBackup
 import com.dayline.data.local.UserSettingsStore
 import com.dayline.domain.model.UserSettings
 import com.dayline.platform.notifications.DaylineNotificationFactory
@@ -10,6 +12,8 @@ import com.dayline.platform.summary.MorningSummaryScheduleStatus
 import com.dayline.platform.summary.MorningSummaryScheduler
 import java.time.LocalTime
 import java.time.format.DateTimeParseException
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,11 +23,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 class SettingsViewModel(
     private val settingsStore: UserSettingsStore,
     private val summaryScheduler: MorningSummaryScheduler,
-    private val notifications: DaylineNotificationFactory
+    private val notifications: DaylineNotificationFactory,
+    private val backup: DaylineBackup
 ) : ViewModel() {
     val settings: StateFlow<UserSettings> = settingsStore.settings.stateIn(
         scope = viewModelScope,
@@ -37,6 +43,9 @@ class SettingsViewModel(
 
     private val mutableError = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = mutableError.asStateFlow()
+
+    private val mutableBackupMessage = MutableStateFlow<String?>(null)
+    val backupMessage: StateFlow<String?> = mutableBackupMessage.asStateFlow()
 
     private val updateMutex = Mutex()
 
@@ -97,6 +106,39 @@ class SettingsViewModel(
         mutableError.value = null
     }
 
+    /** [write] stores the JSON wherever the user chose; it runs off the main thread. */
+    fun exportBackup(write: suspend (String) -> Unit) {
+        runBackupJob("Backup saved.", "Couldn't save the backup") {
+            write(backup.export())
+        }
+    }
+
+    fun restoreBackup(read: suspend () -> String) {
+        runBackupJob("Backup restored.", "Couldn't restore the backup") {
+            backup.restore(read())
+        }
+    }
+
+    fun clearBackupMessage() {
+        mutableBackupMessage.value = null
+    }
+
+    private fun runBackupJob(success: String, failure: String, job: suspend () -> Unit) {
+        mutableBackupMessage.value = null
+        viewModelScope.launch {
+            mutableBackupMessage.value = try {
+                withContext(Dispatchers.IO) { job() }
+                success
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: BackupFormatException) {
+                exception.message
+            } catch (exception: Exception) {
+                "$failure: ${exception.message ?: "unknown error"}"
+            }
+        }
+    }
+
     private fun updateSettings(transform: (UserSettings) -> UserSettings) {
         mutableError.value = null
         viewModelScope.launch {
@@ -117,12 +159,13 @@ class SettingsViewModel(
     class Factory(
         private val settingsStore: UserSettingsStore,
         private val summaryScheduler: MorningSummaryScheduler,
-        private val notifications: DaylineNotificationFactory
+        private val notifications: DaylineNotificationFactory,
+    private val backup: DaylineBackup
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             require(modelClass.isAssignableFrom(SettingsViewModel::class.java))
             @Suppress("UNCHECKED_CAST")
-            return SettingsViewModel(settingsStore, summaryScheduler, notifications) as T
+            return SettingsViewModel(settingsStore, summaryScheduler, notifications, backup) as T
         }
     }
 }

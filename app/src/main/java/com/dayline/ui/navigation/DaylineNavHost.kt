@@ -64,6 +64,7 @@ import com.dayline.ui.tasks.TaskEditorScreen
 import com.dayline.ui.tasks.TaskViewModel
 import com.dayline.ui.tasks.TasksScreen
 import com.dayline.ui.today.TodayScreen
+import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.CancellationException
 
@@ -100,7 +101,8 @@ fun DaylineNavHost(container: AppContainer) {
             SettingsViewModel.Factory(
                 container.userSettingsStore,
                 container.morningSummaryScheduler,
-                container.notificationFactory
+                container.notificationFactory,
+                container.backup
             )
         }
     )
@@ -128,6 +130,29 @@ fun DaylineNavHost(container: AppContainer) {
             settingsViewModel.reportCalendarPermissionDenied()
         }
     }
+    val exportBackupLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            settingsViewModel.exportBackup { json ->
+                checkNotNull(context.contentResolver.openOutputStream(uri, "wt")) {
+                    "the file couldn't be opened"
+                }.bufferedWriter().use { it.write(json) }
+            }
+        }
+    }
+    val restoreBackupLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            settingsViewModel.restoreBackup {
+                checkNotNull(context.contentResolver.openInputStream(uri)) {
+                    "the file couldn't be opened"
+                }.bufferedReader().use { it.readText() }
+            }
+        }
+    }
+    val backupMessage by settingsViewModel.backupMessage.collectAsState()
     val tasks by taskViewModel.tasks.collectAsState()
     val habits by habitViewModel.habits.collectAsState()
     val today by habitViewModel.today.collectAsState()
@@ -404,7 +429,17 @@ fun DaylineNavHost(container: AppContainer) {
                                 .setData(Uri.parse("package:${context.packageName}"))
                         )
                     },
-                    modifier = Modifier.padding(contentPadding)
+                    modifier = Modifier.padding(contentPadding),
+                    backupMessage = backupMessage,
+                    onExportBackup = {
+                        exportBackupLauncher.launch("Dayline-backup-${LocalDate.now()}.json")
+                    },
+                    onRestoreBackup = {
+                        // Some file managers label .json as text or octet-stream.
+                        restoreBackupLauncher.launch(
+                            arrayOf("application/json", "text/plain", "application/octet-stream")
+                        )
+                    }
                 )
             }
         }

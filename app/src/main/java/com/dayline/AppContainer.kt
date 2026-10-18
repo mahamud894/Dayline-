@@ -6,6 +6,7 @@ import com.dayline.data.HabitRepository
 import com.dayline.data.RoomHabitRepository
 import com.dayline.data.RoomTaskRepository
 import com.dayline.data.TaskRepository
+import com.dayline.data.backup.DaylineBackup
 import com.dayline.data.local.DaylineDatabase
 import com.dayline.data.local.UserSettingsStore
 import com.dayline.platform.calendar.AndroidCalendarReader
@@ -56,6 +57,16 @@ class AppContainer(application: Application) {
         notifications = notificationFactory
     )
     val morningSummaryScheduler = MorningSummaryScheduler(application)
+    val backup = DaylineBackup(
+        database = database,
+        readSettings = { userSettingsStore.settings.first() },
+        writeSettings = userSettingsStore::save,
+        beforeRestore = { taskIds -> taskIds.forEach { reminderActionHandler.clearReminders(it) } },
+        afterRestore = { settings ->
+            reminderScheduler.restorePending()
+            morningSummaryScheduler.schedule(settings)
+        }
+    )
     val smartWakeCoordinator = SmartWakeCoordinator(
         settings = { userSettingsStore.settings.first() },
         gate = SharedPreferencesSummaryDeliveryGate(application),

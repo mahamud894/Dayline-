@@ -75,4 +75,13 @@ interface TaskDao {
 
     @Query("DELETE FROM tasks WHERE id = :id")
     suspend fun deleteById(id: String): Int
+
+    @Query("SELECT * FROM tasks ORDER BY id")
+    suspend fun getAll(): List<TaskEntity>
+
+    @Insert
+    suspend fun insertAll(tasks: List<TaskEntity>)
+
+    @Query("DELETE FROM tasks")
+    suspend fun deleteAll()
 }
