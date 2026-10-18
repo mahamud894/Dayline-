@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,8 +52,8 @@ fun HabitEditorScreen(
     onSave: (title: String, schedule: HabitSchedule) -> Unit,
     onDelete: () -> Unit = {}
 ) {
-    var title by remember(habit?.id) { mutableStateOf(habit?.title.orEmpty()) }
-    var scheduleType by remember(habit?.id) {
+    var title by rememberSaveable(habit?.id) { mutableStateOf(habit?.title.orEmpty()) }
+    var scheduleType by rememberSaveable(habit?.id) {
         mutableStateOf(
             when (habit?.schedule) {
                 is HabitSchedule.Weekdays -> ScheduleType.SELECTED_DAYS
@@ -61,15 +62,15 @@ fun HabitEditorScreen(
             }
         )
     }
-    var selectedDays by remember(habit?.id) {
+    var selectedDays by rememberSaveable(habit?.id) {
         mutableStateOf((habit?.schedule as? HabitSchedule.Weekdays)?.days.orEmpty())
     }
-    var interval by remember(habit?.id) {
+    var interval by rememberSaveable(habit?.id) {
         mutableStateOf(
             (habit?.schedule as? HabitSchedule.EveryDays)?.interval?.toString() ?: "2"
         )
     }
-    var localError by remember(habit?.id) { mutableStateOf<String?>(null) }
+    var localError by rememberSaveable(habit?.id) { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier

@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,15 +51,15 @@ fun TaskEditorScreen(
     ) -> Unit,
     onDelete: () -> Unit = {}
 ) {
-    var title by remember(task?.id) { mutableStateOf(task?.title.orEmpty()) }
-    var notes by remember(task?.id) { mutableStateOf(task?.notes.orEmpty()) }
-    var deadline by remember(task?.id) {
+    var title by rememberSaveable(task?.id) { mutableStateOf(task?.title.orEmpty()) }
+    var notes by rememberSaveable(task?.id) { mutableStateOf(task?.notes.orEmpty()) }
+    var deadline by rememberSaveable(task?.id) {
         mutableStateOf(task?.dueAtEpochMillis?.let(::toLocalDeadline))
     }
-    var priority by remember(task?.id) {
+    var priority by rememberSaveable(task?.id) {
         mutableStateOf(task?.priority ?: TaskPriority.NORMAL)
     }
-    var quietModeOverrideAllowed by remember(task?.id) {
+    var quietModeOverrideAllowed by rememberSaveable(task?.id) {
         mutableStateOf(task?.quietModeOverrideAllowed ?: false)
     }
 

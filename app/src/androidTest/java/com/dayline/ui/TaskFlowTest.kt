@@ -52,6 +52,16 @@ class TaskFlowTest {
     }
 
     @Test
+    fun typedTaskSurvivesRotation() {
+        composeRule.onNodeWithTag("add-task-fab").performClick()
+        composeRule.onNodeWithTag("task-title").performScrollTo().performTextInput("Half typed")
+
+        composeRule.activityRule.scenario.recreate()
+
+        composeRule.onNodeWithText("Half typed").assertIsDisplayed()
+    }
+
+    @Test
     fun systemBackLeavesTheEditorAndTasksCanBeDeleted() {
         composeRule.onNodeWithTag("add-task-fab").performClick()
         composeRule.onNodeWithTag("task-title").performScrollTo().performTextInput("Typo task")

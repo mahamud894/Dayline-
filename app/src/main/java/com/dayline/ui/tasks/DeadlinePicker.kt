@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,8 +50,8 @@ fun DeadlineField(
     modifier: Modifier = Modifier
 ) {
     val is24Hour = DateFormat.is24HourFormat(LocalContext.current)
-    var showDatePicker by remember { mutableStateOf(false) }
-    var pickedDate by remember { mutableStateOf<LocalDate?>(null) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var pickedDate by rememberSaveable { mutableStateOf<LocalDate?>(null) }
 
     Box(modifier = modifier.fillMaxWidth()) {
         OutlinedTextField(
