@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskPriority
+import com.dayline.ui.common.DeleteWithConfirmation
 
 @Composable
 fun TaskEditorScreen(
@@ -46,7 +47,8 @@ fun TaskEditorScreen(
         dueAtText: String,
         priority: TaskPriority,
         quietModeOverrideAllowed: Boolean
-    ) -> Unit
+    ) -> Unit,
+    onDelete: () -> Unit = {}
 ) {
     var title by remember(task?.id) { mutableStateOf(task?.title.orEmpty()) }
     var notes by remember(task?.id) { mutableStateOf(task?.notes.orEmpty()) }
@@ -180,6 +182,14 @@ fun TaskEditorScreen(
             )
         ) {
             Text("Save task", fontWeight = FontWeight.Bold)
+        }
+        if (task != null) {
+            DeleteWithConfirmation(
+                label = "Delete task",
+                dialogTitle = "Delete this task?",
+                dialogText = "\"${task.title}\" and its reminders will be removed.",
+                onConfirm = onDelete
+            )
         }
     }
 }

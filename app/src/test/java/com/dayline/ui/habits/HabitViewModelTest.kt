@@ -62,5 +62,6 @@ class HabitViewModelTest {
         override suspend fun refreshStreaks(today: LocalDate) {
             refreshedDates += today
         }
+        override suspend fun deleteHabit(id: String) = Unit
     }
 }

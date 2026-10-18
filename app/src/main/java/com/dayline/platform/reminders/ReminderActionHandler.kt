@@ -88,6 +88,14 @@ class ReminderActionHandler(
         }
     }
 
+    /** Cancels every pending reminder and notification for a task that is going away. */
+    suspend fun clearReminders(taskId: String) {
+        ReminderOperationLocks.withTaskLock(taskId) {
+            scheduler.cancel(taskId)
+            notifications.clearTask(taskId)
+        }
+    }
+
     private companion object {
         const val MILLIS_PER_MINUTE = 60_000L
     }

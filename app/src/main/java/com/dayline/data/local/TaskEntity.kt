@@ -72,4 +72,7 @@ interface TaskDao {
             "WHERE id = :id AND status = 'ACTIVE' AND dueAtEpochMillis <= :nowEpochMillis"
     )
     suspend fun markOverdueIfActive(id: String, nowEpochMillis: Long): Int
+
+    @Query("DELETE FROM tasks WHERE id = :id")
+    suspend fun deleteById(id: String): Int
 }

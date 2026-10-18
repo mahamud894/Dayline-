@@ -153,6 +153,46 @@ class TaskViewModelTest {
             Dispatchers.resetMain()
         }
     }
+    @Test
+    fun deletingATaskCancelsItsRemindersAndRemovesIt() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+            val repository = RecordingTaskRepository()
+            val scheduler = RecordingReminderScheduler()
+            val notifications = RecordingTaskNotificationController()
+            val task = Task(
+                id = "doomed-task",
+                title = "Typo task",
+                notes = null,
+                dueAtEpochMillis = System.currentTimeMillis() + 60_000,
+                priority = TaskPriority.NORMAL,
+                status = TaskStatus.ACTIVE,
+                quietModeOverrideAllowed = false,
+                completedAtEpochMillis = null
+            )
+            repository.savedTask = task
+            val actionHandler = ReminderActionHandler(
+                repository = repository,
+                scheduler = scheduler,
+                notifications = notifications,
+                clock = Clock.systemUTC(),
+                snoozeMinutes = { 10 }
+            )
+            val viewModel = TaskViewModel(repository, scheduler, actionHandler)
+            var deleted = false
+
+            viewModel.deleteTask(task.id) { deleted = true }
+            advanceUntilIdle()
+
+            assertEquals(null, repository.savedTask)
+            assertEquals(listOf(task.id), scheduler.cancelledTaskIds)
+            assertEquals(listOf(task.id), notifications.clearedTaskIds)
+            assertEquals(true, deleted)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
     private class RecordingTaskRepository : TaskRepository {
         var savedTask: Task? = null
 
@@ -165,6 +205,9 @@ class TaskViewModelTest {
         override suspend fun getTask(id: String): Task? = savedTask
         override suspend fun completeIfIncomplete(id: String, atEpochMillis: Long) = true
         override suspend fun markOverdueIfActive(id: String, nowEpochMillis: Long) = true
+        override suspend fun deleteTask(id: String) {
+            if (savedTask?.id == id) savedTask = null
+        }
     }
 
     private class RecordingReminderScheduler(
@@ -186,6 +229,7 @@ class TaskViewModelTest {
 
     private class RecordingTaskNotificationController : TaskNotificationController {
         val acknowledgedTaskIds = mutableListOf<String>()
+        val clearedTaskIds = mutableListOf<String>()
 
         override fun showReminder(task: Task, kind: com.dayline.domain.reminders.ReminderKind) = Unit
         override fun showOverdue(task: Task) = Unit
@@ -194,6 +238,8 @@ class TaskViewModelTest {
             acknowledgedTaskIds += taskId
         }
         override fun clearOverdueAcknowledgment(taskId: String) = Unit
-        override fun clearTask(taskId: String) = Unit
+        override fun clearTask(taskId: String) {
+            clearedTaskIds += taskId
+        }
     }
 }

@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dayline.domain.model.Habit
 import com.dayline.domain.model.HabitSchedule
+import com.dayline.ui.common.DeleteWithConfirmation
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -47,7 +48,8 @@ fun HabitEditorScreen(
     today: LocalDate,
     onBack: () -> Unit,
     onClearError: () -> Unit,
-    onSave: (title: String, schedule: HabitSchedule) -> Unit
+    onSave: (title: String, schedule: HabitSchedule) -> Unit,
+    onDelete: () -> Unit = {}
 ) {
     var title by remember(habit?.id) { mutableStateOf(habit?.title.orEmpty()) }
     var scheduleType by remember(habit?.id) {
@@ -244,6 +246,14 @@ fun HabitEditorScreen(
             )
         ) {
             Text("Save habit", fontWeight = FontWeight.Bold)
+        }
+        if (habit != null) {
+            DeleteWithConfirmation(
+                label = "Delete habit",
+                dialogTitle = "Delete this habit?",
+                dialogText = "\"${habit.title}\" and its streak history will be removed.",
+                onConfirm = onDelete
+            )
         }
     }
 }

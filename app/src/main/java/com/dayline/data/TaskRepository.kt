@@ -14,6 +14,7 @@ interface TaskRepository {
     suspend fun getTask(id: String): Task?
     suspend fun completeIfIncomplete(id: String, atEpochMillis: Long): Boolean
     suspend fun markOverdueIfActive(id: String, nowEpochMillis: Long): Boolean
+    suspend fun deleteTask(id: String)
 }
 
 class RoomTaskRepository(private val database: DaylineDatabase) : TaskRepository {
@@ -39,4 +40,8 @@ class RoomTaskRepository(private val database: DaylineDatabase) : TaskRepository
 
     override suspend fun markOverdueIfActive(id: String, nowEpochMillis: Long): Boolean =
         database.taskDao().markOverdueIfActive(id, nowEpochMillis) == 1
+
+    override suspend fun deleteTask(id: String) {
+        database.taskDao().deleteById(id)
+    }
 }

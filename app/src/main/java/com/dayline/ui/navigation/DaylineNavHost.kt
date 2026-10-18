@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
@@ -168,6 +169,21 @@ fun DaylineNavHost(container: AppContainer) {
         }
     }
 
+    // System Back returns to the previous screen instead of closing the app.
+    BackHandler(enabled = isHabitEditorVisible) {
+        isHabitEditorVisible = false
+        habitViewModel.clearSaveError()
+    }
+    BackHandler(enabled = !isHabitEditorVisible && isEditorVisible) {
+        isEditorVisible = false
+        taskViewModel.clearSaveError()
+    }
+    BackHandler(
+        enabled = !isHabitEditorVisible && !isEditorVisible && selected != Destination.TODAY
+    ) {
+        selected = if (selected == Destination.SETTINGS) Destination.PROFILE else Destination.TODAY
+    }
+
     if (isHabitEditorVisible) {
         HabitEditorScreen(
             habit = editingHabit,
@@ -186,6 +202,14 @@ fun DaylineNavHost(container: AppContainer) {
                 ) {
                     isHabitEditorVisible = false
                     editingHabitId = null
+                }
+            },
+            onDelete = {
+                editingHabit?.let { habit ->
+                    habitViewModel.deleteHabit(habit.id) {
+                        isHabitEditorVisible = false
+                        editingHabitId = null
+                    }
                 }
             }
         )
@@ -209,6 +233,14 @@ fun DaylineNavHost(container: AppContainer) {
                 ) {
                     isEditorVisible = false
                     editingTaskId = null
+                }
+            },
+            onDelete = {
+                editingTask?.let { task ->
+                    taskViewModel.deleteTask(task.id) {
+                        isEditorVisible = false
+                        editingTaskId = null
+                    }
                 }
             }
         )

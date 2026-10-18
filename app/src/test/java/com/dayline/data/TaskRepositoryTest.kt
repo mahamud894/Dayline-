@@ -88,6 +88,17 @@ class TaskRepositoryTest {
         assertEquals(task.copy(status = TaskStatus.OVERDUE), repository.getTask(task.id))
     }
 
+    @Test
+    fun deletingATaskRemovesIt() = runTest {
+        val task = sampleTask()
+        repository.saveTask(task)
+
+        repository.deleteTask(task.id)
+
+        assertNull(repository.getTask(task.id))
+        assertEquals(emptyList<Task>(), repository.observeTasks().first())
+    }
+
     private fun sampleTask() = Task(
         id = "task-1",
         title = "Submit project",

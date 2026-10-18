@@ -99,6 +99,32 @@ class HabitRepositoryTest {
         )
     }
 
+    @Test
+    fun editingAHabitKeepsItsCompletionHistory() = runTest {
+        val habit = sampleHabit()
+        val date = LocalDate.of(2026, 10, 18)
+        repository.saveHabit(habit)
+        repository.completeForDate(habit.id, date)
+
+        repository.saveHabit(habit.copy(title = "Evening stretch"))
+
+        assertEquals(1, database.habitCompletionDao().countForHabitAndDate(habit.id, date.toString()))
+        assertEquals(setOf(habit.id), repository.observeCompletedHabitIds(date).first())
+    }
+
+    @Test
+    fun deletingAHabitRemovesItAndItsCompletions() = runTest {
+        val habit = sampleHabit()
+        val date = LocalDate.of(2026, 10, 18)
+        repository.saveHabit(habit)
+        repository.completeForDate(habit.id, date)
+
+        repository.deleteHabit(habit.id)
+
+        assertEquals(emptyList<Habit>(), repository.observeHabits().first())
+        assertEquals(0, database.habitCompletionDao().countForHabitAndDate(habit.id, date.toString()))
+    }
+
     private fun sampleHabit() = Habit(
         id = "habit-1",
         title = "Morning stretch",

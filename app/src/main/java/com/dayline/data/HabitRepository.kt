@@ -15,6 +15,7 @@ interface HabitRepository {
     suspend fun saveHabit(habit: Habit)
     suspend fun completeForDate(id: String, date: LocalDate)
     suspend fun refreshStreaks(today: LocalDate)
+    suspend fun deleteHabit(id: String)
 }
 
 class RoomHabitRepository(private val database: DaylineDatabase) : HabitRepository {
@@ -63,5 +64,9 @@ class RoomHabitRepository(private val database: DaylineDatabase) : HabitReposito
                 }
             }
         }
+    }
+
+    override suspend fun deleteHabit(id: String) {
+        database.habitDao().deleteById(id)
     }
 }

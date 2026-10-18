@@ -1,6 +1,7 @@
 package com.dayline.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.test.espresso.Espresso
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -48,5 +49,23 @@ class TaskFlowTest {
             .performClick()
         composeRule.onNodeWithText("Completed").assertIsDisplayed()
         composeRule.onNodeWithText("Review client delivery").assertIsDisplayed()
+    }
+
+    @Test
+    fun systemBackLeavesTheEditorAndTasksCanBeDeleted() {
+        composeRule.onNodeWithTag("add-task-fab").performClick()
+        composeRule.onNodeWithTag("task-title").performScrollTo().performTextInput("Typo task")
+        Espresso.pressBack()
+        composeRule.onNodeWithTag("add-task-fab").assertIsDisplayed()
+
+        composeRule.onNodeWithTag("add-task-fab").performClick()
+        composeRule.onNodeWithTag("task-title").performScrollTo().performTextInput("Typo task")
+        composeRule.onNodeWithTag("save-task").performScrollTo().performClick()
+        composeRule.onNodeWithTag("nav-tasks").performClick()
+        composeRule.onNodeWithContentDescription("Edit task: Typo task").performClick()
+        composeRule.onNodeWithTag("delete-item").performScrollTo().performClick()
+        composeRule.onNodeWithTag("delete-confirm").performClick()
+
+        composeRule.onNodeWithText("Typo task").assertDoesNotExist()
     }
 }

@@ -127,6 +127,15 @@ class TaskViewModel(
         }
     }
 
+    fun deleteTask(id: String, onDeleted: () -> Unit) {
+        viewModelScope.launch {
+            reminderActionHandler.clearReminders(id)
+            repository.deleteTask(id)
+            refreshReminderScheduleStatus()
+            onDeleted()
+        }
+    }
+
     fun clearSaveError() {
         mutableSaveError.value = null
     }

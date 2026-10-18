@@ -2,10 +2,9 @@ package com.dayline.data.local
 
 import androidx.room.Dao
 import androidx.room.Entity
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Upsert
 import com.dayline.domain.model.Habit
 import com.dayline.domain.model.HabitSchedule
 import java.time.DayOfWeek
@@ -83,7 +82,8 @@ interface HabitDao {
     @Query("SELECT * FROM habits ORDER BY title, id")
     fun observeAll(): Flow<List<HabitEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // @Upsert updates in place; REPLACE would delete the row and cascade away its completions.
+    @Upsert
     suspend fun upsert(habit: HabitEntity)
 
     @Query("SELECT * FROM habits WHERE id = :id")
@@ -94,4 +94,8 @@ interface HabitDao {
 
     @Query("UPDATE habits SET currentStreak = :current, bestStreak = :best WHERE id = :id")
     suspend fun updateStreak(id: String, current: Int, best: Int): Int
+
+    /** Completions go with it through the ON DELETE CASCADE foreign key. */
+    @Query("DELETE FROM habits WHERE id = :id")
+    suspend fun deleteById(id: String): Int
 }

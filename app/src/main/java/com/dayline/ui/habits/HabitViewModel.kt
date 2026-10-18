@@ -91,6 +91,15 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
         }
     }
 
+    fun deleteHabit(id: String, onDeleted: () -> Unit) {
+        viewModelScope.launch {
+            repository.deleteHabit(id)
+            mutableCompletedHabitIds.value =
+                repository.observeCompletedHabitIds(today.value).first()
+            onDeleted()
+        }
+    }
+
     fun clearSaveError() {
         mutableSaveError.value = null
     }
