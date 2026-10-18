@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark from the first frame, so launch never flashes white before Compose draws. -->
+    <style name="Theme.Dayline" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/dayline_background</item>
+        <item name="android:colorBackground">@color/dayline_background</item>
+        <item name="android:statusBarColor">@color/dayline_background</item>
+        <item name="android:navigationBarColor">@color/dayline_nav_bar</item>
+        <item name="android:colorAccent">@color/dayline_lime</item>
+    </style>
+</resources>

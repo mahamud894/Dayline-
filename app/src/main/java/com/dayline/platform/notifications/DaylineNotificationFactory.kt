@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.dayline.MainActivity
+import com.dayline.R
 import com.dayline.platform.alarm.DeadlineAlarmService
 import com.dayline.ui.alarm.DeadlineAlarmActivity
 import com.dayline.domain.model.Task
@@ -194,7 +195,7 @@ class DaylineNotificationFactory(private val context: Context) :
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val notification = Notification.Builder(context, CHANNEL_SUMMARY)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_stat_dayline)
             .setContentTitle("Dayline · Today")
             .setContentText("${items.size} priorities for $date")
             .setStyle(Notification.BigTextStyle().bigText(body.joinToString("\n")))
@@ -227,7 +228,7 @@ class DaylineNotificationFactory(private val context: Context) :
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val builder = Notification.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_stat_dayline)
             .setContentTitle(title)
             .setContentText(task.title)
             .setStyle(Notification.BigTextStyle().bigText(task.title))

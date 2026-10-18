@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="dayline_background">#FF0B0D14</color>
+    <color name="dayline_nav_bar">#FF111620</color>
+    <color name="dayline_lime">#FFB7FF4A</color>
+</resources>

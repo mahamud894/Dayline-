@@ -13,9 +13,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -256,24 +265,31 @@ fun DaylineNavHost(container: AppContainer) {
                             onClick = { selected = destination },
                             modifier = Modifier.testTag("nav-${destination.label.lowercase()}"),
                             icon = {
-                                Text(
-                                    text = when (destination) {
-                                        Destination.TODAY -> "◎"
-                                        Destination.TASKS -> "▤"
-                                        Destination.HABITS -> "✦"
-                                        Destination.PROFILE -> "◉"
-                                        Destination.SETTINGS -> "⚙"
+                                Icon(
+                                    imageVector = when (destination) {
+                                        Destination.TODAY -> Icons.Rounded.Home
+                                        Destination.TASKS -> Icons.Rounded.CheckCircle
+                                        Destination.HABITS -> Icons.Rounded.Star
+                                        Destination.PROFILE -> Icons.Rounded.Person
+                                        Destination.SETTINGS -> Icons.Rounded.Settings
                                     },
-                                    fontSize = 18.sp
+                                    contentDescription = null
                                 )
                             },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color(0xFF10150B),
+                                selectedTextColor = Color(0xFFB7FF4A),
+                                indicatorColor = Color(0xFFB7FF4A),
+                                unselectedIconColor = Color(0xFFC2C7D3),
+                                unselectedTextColor = Color(0xFFC2C7D3)
+                            ),
                             label = { Text(destination.label) }
                         )
                     }
                 }
             },
             floatingActionButton = {
-                if (selected == Destination.TODAY) {
+                if (selected == Destination.TODAY || selected == Destination.TASKS) {
                     FloatingActionButton(
                         onClick = {
                             editingTaskId = null
@@ -287,7 +303,7 @@ fun DaylineNavHost(container: AppContainer) {
                         containerColor = Color(0xFFB7FF4A),
                         contentColor = Color(0xFF10150B)
                     ) {
-                        Text("+", fontSize = 30.sp, fontWeight = FontWeight.Medium)
+                        Icon(Icons.Rounded.Add, contentDescription = null)
                     }
                 }
             }
