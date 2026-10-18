@@ -134,16 +134,50 @@ class ReminderDeliveryHandlerTest {
     }
 
     @Test
-    fun snoozeForAnOverdueTaskShowsOneShotReminderWithoutRestoringPersistentAlert() = runTest {
+    fun snoozeForAnOverdueTaskRingsTheDeadlineAlarmAgain() = runTest {
         val task = sampleTask().copy(status = TaskStatus.OVERDUE)
         repository.saveTask(task)
 
         deliveryHandler().deliver(task.id, ReminderKind.SNOOZE, NOW)
 
         assertEquals(TaskStatus.OVERDUE, repository.getTask(task.id)?.status)
-        assertEquals(listOf(task.id to ReminderKind.SNOOZE), notifications.reminders)
+        assertEquals(listOf(task.id), notifications.rungTaskIds)
+        assertTrue(notifications.reminders.isEmpty())
         assertTrue(notifications.overdueTaskIds.isEmpty())
-        assertTrue(scheduler.cancelledTaskIds.isEmpty())
+    }
+
+    @Test
+    fun snoozeBeforeTheDeadlineShowsANormalReminderWithoutRinging() = runTest {
+        val task = sampleTask().copy(dueAtEpochMillis = NOW + TWO_HOURS)
+        repository.saveTask(task)
+
+        deliveryHandler().deliver(task.id, ReminderKind.SNOOZE, NOW)
+
+        assertEquals(listOf(task.id to ReminderKind.SNOOZE), notifications.reminders)
+        assertTrue(notifications.rungTaskIds.isEmpty())
+    }
+
+    @Test
+    fun reachingTheDeadlineRingsTheAlarmInsteadOfAPlainNotification() = runTest {
+        val task = sampleTask().copy(dueAtEpochMillis = NOW)
+        repository.saveTask(task)
+
+        deliveryHandler().deliver(task.id, ReminderKind.OVERDUE, NOW)
+
+        assertEquals(TaskStatus.OVERDUE, repository.getTask(task.id)?.status)
+        assertEquals(listOf(task.id), notifications.rungTaskIds)
+        assertTrue(notifications.overdueTaskIds.isEmpty())
+    }
+
+    @Test
+    fun repeatedDeadlineDeliveryForAnAlreadyOverdueTaskDoesNotRingAgain() = runTest {
+        val task = sampleTask().copy(status = TaskStatus.OVERDUE)
+        repository.saveTask(task)
+
+        deliveryHandler().deliver(task.id, ReminderKind.OVERDUE, task.dueAtEpochMillis!!)
+
+        assertTrue(notifications.rungTaskIds.isEmpty())
+        assertEquals(listOf(task.id), notifications.overdueTaskIds)
     }
 
     private fun deliveryHandler() = ReminderDeliveryHandler(
@@ -187,12 +221,16 @@ class ReminderDeliveryHandlerTest {
         val overdueTaskIds = mutableListOf<String>()
         val reminders = mutableListOf<Pair<String, ReminderKind>>()
         val clearedTaskIds = mutableListOf<String>()
+        val rungTaskIds = mutableListOf<String>()
 
         override fun showReminder(task: Task, kind: ReminderKind) {
             reminders += task.id to kind
         }
         override fun showOverdue(task: Task) {
             overdueTaskIds += task.id
+        }
+        override fun ringDeadline(task: Task) {
+            rungTaskIds += task.id
         }
         override fun dismissCurrent(taskId: String) = Unit
         override fun acknowledgeOverdue(taskId: String) = Unit

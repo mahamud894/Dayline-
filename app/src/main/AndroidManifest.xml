@@ -5,6 +5,11 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <application
         android:name=".DaylineApp"
         android:allowBackup="false"
@@ -21,6 +26,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.alarm.DeadlineAlarmActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.dayline.alarm"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+        <service
+            android:name=".platform.alarm.DeadlineAlarmService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
         <receiver
             android:name=".platform.reminders.ReminderReceiver"
             android:exported="false" />

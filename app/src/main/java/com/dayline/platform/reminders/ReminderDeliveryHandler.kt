@@ -38,14 +38,18 @@ class ReminderDeliveryHandler(
         }
         val now = clock.millis()
         if (kind == ReminderKind.SNOOZE && triggerAtEpochMillis <= now) {
-            if (task.status == TaskStatus.ACTIVE && dueAt <= now) {
+            if (dueAt > now) {
+                notifications.showReminder(task, kind)
+                return
+            }
+            // A snooze that lands after the deadline rings the alarm again.
+            if (task.status == TaskStatus.ACTIVE) {
                 repository.markOverdueIfActive(taskId, now)
                 scheduler.cancel(taskId)
-                repository.getTask(taskId)
-                    ?.takeIf { it.status == TaskStatus.OVERDUE }
-                    ?.let(notifications::showOverdue)
             }
-            notifications.showReminder(task, kind)
+            repository.getTask(taskId)
+                ?.takeIf { it.status == TaskStatus.OVERDUE }
+                ?.let(notifications::ringDeadline)
             return
         }
         if (dueAt > now) {
@@ -54,11 +58,12 @@ class ReminderDeliveryHandler(
             return
         }
 
-        repository.markOverdueIfActive(taskId, now)
+        val reachedDeadline = repository.markOverdueIfActive(taskId, now)
         scheduler.cancel(taskId)
-        repository.getTask(taskId)
-            ?.takeIf { it.status == TaskStatus.OVERDUE }
-            ?.let(notifications::showOverdue)
+        val overdue = repository.getTask(taskId)?.takeIf { it.status == TaskStatus.OVERDUE }
+            ?: return
+        // Ring only on the transition to overdue; repeat deliveries keep the quiet notification.
+        if (reachedDeadline) notifications.ringDeadline(overdue) else notifications.showOverdue(overdue)
     }
 
     private fun isCurrentMilestone(

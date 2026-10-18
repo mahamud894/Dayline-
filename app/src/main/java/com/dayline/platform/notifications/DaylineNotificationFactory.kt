@@ -7,9 +7,12 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.dayline.MainActivity
+import com.dayline.platform.alarm.DeadlineAlarmService
+import com.dayline.ui.alarm.DeadlineAlarmActivity
 import com.dayline.domain.model.Task
 import com.dayline.domain.summary.SummaryCategory
 import com.dayline.domain.summary.SummaryItem
@@ -64,7 +67,17 @@ class DaylineNotificationFactory(private val context: Context) :
                 CHANNEL_SUMMARY,
                 "Daily summaries",
                 NotificationManager.IMPORTANCE_LOW
-            )
+            ),
+            // Silent: DeadlineAlarmService plays the looping alarm sound itself.
+            NotificationChannel(
+                CHANNEL_ALARM,
+                "Deadline alarms",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                setSound(null, null)
+                enableVibration(false)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            }
         )
         notificationManager.createNotificationChannels(channels)
     }
@@ -105,7 +118,43 @@ class DaylineNotificationFactory(private val context: Context) :
         )
     }
 
+    override fun ringDeadline(task: Task) {
+        ensureNotificationsEnabled()
+        notificationManager.cancel(task.id, TASK_NOTIFICATION_ID)
+        try {
+            DeadlineAlarmService.start(context, task)
+        } catch (exception: IllegalStateException) {
+            // Android refused a foreground service from the background; keep the plain alert.
+            Log.w(TAG, "Unable to ring the deadline alarm for ${task.id}.", exception)
+            showOverdue(task)
+        }
+    }
+
+    fun buildDeadlineAlarmNotification(taskId: String, title: String, dueAt: Long): Notification {
+        val alarmScreen = PendingIntent.getActivity(
+            context,
+            stableRequestCode(taskId, "alarm"),
+            DeadlineAlarmActivity.intent(context, taskId, title, dueAt),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        return Notification.Builder(context, CHANNEL_ALARM)
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle("Deadline now")
+            .setContentText(title)
+            .setStyle(Notification.BigTextStyle().bigText(title))
+            .setContentIntent(alarmScreen)
+            .setFullScreenIntent(alarmScreen, true)
+            .setCategory(Notification.CATEGORY_ALARM)
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
+            .setOngoing(true)
+            .addAction(action(taskId, ReminderAction.DONE, "Done"))
+            .addAction(action(taskId, ReminderAction.SNOOZE, "Snooze"))
+            .addAction(action(taskId, ReminderAction.DISMISS, "Dismiss"))
+            .build()
+    }
+
     override fun dismissCurrent(taskId: String) {
+        DeadlineAlarmService.stop(context, taskId)
         notificationManager.cancel(taskId, TASK_NOTIFICATION_ID)
     }
 
@@ -233,6 +282,8 @@ class DaylineNotificationFactory(private val context: Context) :
         const val CHANNEL_URGENT_DND = "dayline_task_urgent_dnd"
         const val CHANNEL_OVERDUE = "dayline_task_overdue"
         const val CHANNEL_SUMMARY = "dayline_daily_summary"
+        const val CHANNEL_ALARM = "dayline_deadline_alarm"
+        private const val TAG = "DaylineNotifications"
         const val SUMMARY_NOTIFICATION_ID = 2
         const val ACTION_OPEN_SUMMARY = "com.dayline.action.OPEN_SUMMARY"
         private const val SUMMARY_TAG = "daily-summary"
