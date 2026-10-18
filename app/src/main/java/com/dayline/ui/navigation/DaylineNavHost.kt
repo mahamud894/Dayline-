@@ -365,6 +365,7 @@ fun DaylineNavHost(container: AppContainer) {
                         isEditorVisible = true
                     },
                     onCompleteTask = { taskViewModel.completeTask(it.id) },
+                    onDeleteTask = { taskViewModel.deleteTask(it.id) {} },
                     modifier = Modifier.padding(contentPadding)
                 )
                 Destination.HABITS -> HabitsScreen(

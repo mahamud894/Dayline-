@@ -20,14 +20,12 @@ fun DeleteWithConfirmation(
     dialogTitle: String,
     dialogText: String,
     onConfirm: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier.fillMaxWidth()
 ) {
     var confirming by remember { mutableStateOf(false) }
     TextButton(
         onClick = { confirming = true },
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("delete-item")
+        modifier = modifier.testTag("delete-item")
     ) {
         Text(label, color = DangerColor)
     }

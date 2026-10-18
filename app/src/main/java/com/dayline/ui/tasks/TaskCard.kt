@@ -13,6 +13,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskPriority
+import com.dayline.ui.common.DeleteWithConfirmation
 import com.dayline.domain.model.TaskStatus
 import java.time.Instant
 import java.time.ZoneId
@@ -32,7 +34,8 @@ internal fun TaskCard(
     task: Task,
     onEdit: () -> Unit,
     onComplete: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDelete: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -69,12 +72,29 @@ internal fun TaskCard(
                 Text(text = it, color = Color(0xFFC2C7D3), fontSize = 13.sp)
             }
             if (task.status == TaskStatus.COMPLETED) {
-                Text(
-                    text = "Completed",
-                    color = Color(0xFF59F5D8),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Completed",
+                        color = Color(0xFF59F5D8),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    onDelete?.let {
+                        DeleteWithConfirmation(
+                            label = "Delete",
+                            dialogTitle = "Delete this task?",
+                            dialogText = "\"${task.title}\" will be removed.",
+                            onConfirm = it,
+                            modifier = Modifier.semantics {
+                                contentDescription = "Delete task: ${task.title}"
+                            }
+                        )
+                    }
+                }
             } else {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

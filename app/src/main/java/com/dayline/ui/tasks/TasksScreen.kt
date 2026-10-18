@@ -36,6 +36,7 @@ fun TasksScreen(
     tasks: List<Task>,
     onEditTask: (Task) -> Unit,
     onCompleteTask: (Task) -> Unit,
+    onDeleteTask: (Task) -> Unit = {},
     reminderScheduleStatus: ReminderScheduleStatus?,
     modifier: Modifier = Modifier
 ) {
@@ -129,7 +130,12 @@ fun TasksScreen(
                 )
             }
             items(completedTasks, key = Task::id) { task ->
-                TaskCard(task = task, onEdit = {}, onComplete = {})
+                TaskCard(
+                    task = task,
+                    onEdit = {},
+                    onComplete = {},
+                    onDelete = { onDeleteTask(task) }
+                )
             }
         }
     }
