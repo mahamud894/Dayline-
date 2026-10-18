@@ -21,9 +21,11 @@ class TaskFlowTest {
     fun taskCanBeCreatedEditedRankedAndCompleted() {
         composeRule.onNodeWithTag("add-task-fab").performClick()
         composeRule.onNodeWithTag("task-title").performScrollTo().performTextInput("Client submission")
-        composeRule.onNodeWithTag("task-due-at")
-            .performScrollTo()
-            .performTextInput("2099-06-01 12:00")
+        // Calendar opens on today, then the clock on the next full hour.
+        composeRule.onNodeWithTag("task-due-at").performScrollTo().performClick()
+        composeRule.onNodeWithTag("deadline-date-confirm").performClick()
+        composeRule.onNodeWithTag("deadline-time-confirm").performClick()
+        composeRule.onNodeWithTag("task-due-at-clear").assertIsDisplayed()
         composeRule.onNodeWithTag("priority-high").performScrollTo().performClick()
         composeRule.onNodeWithTag("save-task").performScrollTo().performClick()
 

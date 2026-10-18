@@ -50,8 +50,8 @@ fun TaskEditorScreen(
 ) {
     var title by remember(task?.id) { mutableStateOf(task?.title.orEmpty()) }
     var notes by remember(task?.id) { mutableStateOf(task?.notes.orEmpty()) }
-    var dueAtText by remember(task?.id) {
-        mutableStateOf(task?.dueAtEpochMillis?.let(::formatTaskDueInput).orEmpty())
+    var deadline by remember(task?.id) {
+        mutableStateOf(task?.dueAtEpochMillis?.let(::toLocalDeadline))
     }
     var priority by remember(task?.id) {
         mutableStateOf(task?.priority ?: TaskPriority.NORMAL)
@@ -107,20 +107,12 @@ fun TaskEditorScreen(
             maxLines = 4,
             shape = RoundedCornerShape(18.dp)
         )
-        OutlinedTextField(
-            value = dueAtText,
-            onValueChange = {
-                dueAtText = it
+        DeadlineField(
+            deadline = deadline,
+            onDeadlineChange = {
+                deadline = it
                 onClearError()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("task-due-at"),
-            label = { Text("Deadline (optional)") },
-            placeholder = { Text("YYYY-MM-DD HH:MM") },
-            supportingText = { Text("Local time, for example 2026-10-18 14:30") },
-            singleLine = true,
-            shape = RoundedCornerShape(18.dp)
+            }
         )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
@@ -169,7 +161,13 @@ fun TaskEditorScreen(
         Spacer(Modifier.height(4.dp))
         Button(
             onClick = {
-                onSave(title, notes, dueAtText, priority, quietModeOverrideAllowed)
+                onSave(
+                    title,
+                    notes,
+                    deadline?.let(::formatDeadlineForSave).orEmpty(),
+                    priority,
+                    quietModeOverrideAllowed
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -186,7 +184,7 @@ fun TaskEditorScreen(
     }
 }
 
-private fun formatTaskDueInput(epochMillis: Long): String =
+private fun toLocalDeadline(epochMillis: Long): java.time.LocalDateTime =
     java.time.Instant.ofEpochMilli(epochMillis)
         .atZone(java.time.ZoneId.systemDefault())
-        .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        .toLocalDateTime()
