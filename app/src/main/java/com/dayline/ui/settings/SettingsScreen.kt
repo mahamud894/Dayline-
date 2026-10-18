@@ -30,7 +30,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dayline.R
+import androidx.compose.ui.res.stringResource
 import com.dayline.domain.model.UserSettings
+import com.dayline.ui.common.UiText
 import com.dayline.platform.summary.MorningSummaryScheduleStatus
 
 @Composable
@@ -38,7 +41,7 @@ fun SettingsScreen(
     settings: UserSettings,
     calendarPermissionGranted: Boolean,
     scheduleStatus: MorningSummaryScheduleStatus?,
-    error: String?,
+    error: UiText?,
     onSummaryEnabledChange: (Boolean) -> Unit,
     onSaveSummaryTime: (String) -> Unit,
     onCalendarImportChange: (Boolean) -> Unit,
@@ -49,7 +52,7 @@ fun SettingsScreen(
     onOpenDndSettings: () -> Unit,
     onOpenCalendarPermissionSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    backupMessage: String? = null,
+    backupMessage: UiText? = null,
     onExportBackup: () -> Unit = {},
     onRestoreBackup: () -> Unit = {},
     alarmFullScreenAllowed: Boolean = true,
@@ -70,19 +73,19 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "TUNE YOUR DAY",
+            text = stringResource(R.string.settings_eyebrow),
             color = Color(0xFFB7FF4A),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "Settings",
+            text = stringResource(R.string.settings_title),
             color = Color(0xFFF4F5FF),
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold
         )
         Button(onClick = onBack, modifier = Modifier.testTag("settings-back")) {
-            Text("Back to profile")
+            Text(stringResource(R.string.settings_back))
         }
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -99,12 +102,12 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "Morning summary",
+                            stringResource(R.string.settings_summary),
                             color = Color(0xFFF4F5FF),
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            "One daily glance at your top commitments.",
+                            stringResource(R.string.settings_summary_detail),
                             color = Color(0xFFC2C7D3),
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -125,8 +128,8 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("summary-time"),
-                    label = { Text("Local time (24-hour)") },
-                    supportingText = { Text("Example: 08:00") },
+                    label = { Text(stringResource(R.string.settings_summary_time)) },
+                    supportingText = { Text(stringResource(R.string.settings_summary_time_example)) },
                     singleLine = true
                 )
                 Button(
@@ -136,17 +139,17 @@ fun SettingsScreen(
                         .fillMaxWidth()
                         .testTag("save-summary-time")
                 ) {
-                    Text("Save summary time")
+                    Text(stringResource(R.string.settings_summary_save))
                 }
                 Text(
                     text = when (scheduleStatus) {
-                        MorningSummaryScheduleStatus.EXACT -> "Exact summary alarm scheduled."
+                        MorningSummaryScheduleStatus.EXACT -> stringResource(R.string.summary_status_exact)
                         MorningSummaryScheduleStatus.WORK_MANAGER_FALLBACK ->
-                            "Android may delay summaries. Allow exact alarms for on-time delivery."
-                        MorningSummaryScheduleStatus.DISABLED -> "Daily summary is turned off."
+                            stringResource(R.string.summary_status_fallback)
+                        MorningSummaryScheduleStatus.DISABLED -> stringResource(R.string.summary_status_disabled)
                         MorningSummaryScheduleStatus.NOTIFICATION_PERMISSION_REQUIRED ->
-                            "Allow notifications to receive your daily summary and deadline reminders."
-                        null -> "Smart Wake starts one hour before this time; the notification is the fallback."
+                            stringResource(R.string.summary_status_notifications)
+                        null -> stringResource(R.string.summary_status_default)
                     },
                     color = Color(0xFFC2C7D3),
                     style = MaterialTheme.typography.bodySmall,
@@ -169,12 +172,12 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "Optional calendar import",
+                            stringResource(R.string.settings_calendar),
                             color = Color(0xFFF4F5FF),
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            "Read-only. Manual tasks remain available without calendar access.",
+                            stringResource(R.string.settings_calendar_detail),
                             color = Color(0xFFC2C7D3),
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -187,7 +190,7 @@ fun SettingsScreen(
                 }
                 if (settings.calendarImportEnabled && !calendarPermissionGranted) {
                     Text(
-                        "Calendar access is unavailable. Grant permission to show events; your manual tasks are unchanged.",
+                        stringResource(R.string.settings_calendar_unavailable),
                         color = Color(0xFFFFC27A),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.testTag("calendar-permission-status")
@@ -198,7 +201,7 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .testTag("open-calendar-permission-settings")
                     ) {
-                        Text("Manage calendar access")
+                        Text(stringResource(R.string.settings_calendar_manage))
                     }
                 }
             }
@@ -217,7 +220,7 @@ fun SettingsScreen(
         )
         error?.let {
             Text(
-                text = it,
+                text = it.resolve(),
                 color = Color(0xFFFF8D9A),
                 modifier = Modifier.testTag("settings-error")
             )
@@ -226,22 +229,22 @@ fun SettingsScreen(
             onClick = onOpenNotificationSettings,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Notification settings")
+            Text(stringResource(R.string.settings_notifications))
         }
         Button(
             onClick = onOpenExactAlarmSettings,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Manage exact alarm access")
+            Text(stringResource(R.string.settings_exact_alarms))
         }
         Button(
             onClick = onOpenDndSettings,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Do Not Disturb access")
+            Text(stringResource(R.string.settings_dnd))
         }
         Text(
-            text = "Android controls notification visibility, exact-alarm access, and Do Not Disturb overrides. Dayline uses a delayed WorkManager fallback when exact alarms are unavailable.",
+            text = stringResource(R.string.settings_system_note),
             color = Color(0xFFC2C7D3),
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(bottom = 12.dp)
@@ -251,7 +254,7 @@ fun SettingsScreen(
 
 @Composable
 private fun BackupCard(
-    message: String?,
+    message: UiText?,
     onExport: () -> Unit,
     onRestore: () -> Unit
 ) {
@@ -264,10 +267,9 @@ private fun BackupCard(
             modifier = Modifier.padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Backup", color = Color(0xFFF4F5FF), fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.backup_title), color = Color(0xFFF4F5FF), fontWeight = FontWeight.SemiBold)
             Text(
-                "Save your tasks, habits, streaks and settings to a file you keep, " +
-                    "or restore them on a new phone.",
+                stringResource(R.string.backup_detail),
                 color = Color(0xFFC2C7D3),
                 style = MaterialTheme.typography.bodySmall
             )
@@ -277,7 +279,7 @@ private fun BackupCard(
                     .fillMaxWidth()
                     .testTag("export-backup")
             ) {
-                Text("Export backup")
+                Text(stringResource(R.string.backup_export))
             }
             OutlinedButton(
                 onClick = { confirmingRestore = true },
@@ -285,11 +287,11 @@ private fun BackupCard(
                     .fillMaxWidth()
                     .testTag("restore-backup")
             ) {
-                Text("Restore from backup", color = Color(0xFFC7A2FF))
+                Text(stringResource(R.string.backup_restore), color = Color(0xFFC7A2FF))
             }
             message?.let {
                 Text(
-                    text = it,
+                    text = it.resolve(),
                     color = Color(0xFFB7FF4A),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.testTag("backup-message")
@@ -300,11 +302,10 @@ private fun BackupCard(
     if (confirmingRestore) {
         AlertDialog(
             onDismissRequest = { confirmingRestore = false },
-            title = { Text("Restore from backup?") },
+            title = { Text(stringResource(R.string.backup_restore_title)) },
             text = {
                 Text(
-                    "Everything currently in Dayline will be replaced by the backup. " +
-                        "This can't be undone."
+                    stringResource(R.string.backup_restore_text)
                 )
             },
             confirmButton = {
@@ -314,10 +315,10 @@ private fun BackupCard(
                         onRestore()
                     },
                     modifier = Modifier.testTag("restore-confirm")
-                ) { Text("Choose file") }
+                ) { Text(stringResource(R.string.backup_choose_file)) }
             },
             dismissButton = {
-                TextButton(onClick = { confirmingRestore = false }) { Text("Cancel") }
+                TextButton(onClick = { confirmingRestore = false }) { Text(stringResource(R.string.action_cancel)) }
             }
         )
     }
@@ -339,16 +340,15 @@ private fun AlarmReliabilityCard(
             modifier = Modifier.padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Alarm reliability", color = Color(0xFFF4F5FF), fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.alarm_reliability_title), color = Color(0xFFF4F5FF), fontWeight = FontWeight.SemiBold)
             Text(
-                "Deadlines ring like an alarm clock and open a full-screen page, " +
-                    "even on the lock screen.",
+                stringResource(R.string.alarm_reliability_detail),
                 color = Color(0xFFC2C7D3),
                 style = MaterialTheme.typography.bodySmall
             )
             if (!fullScreenAllowed) {
                 Text(
-                    "Full-screen alarms are turned off, so deadlines only show a notification.",
+                    stringResource(R.string.alarm_full_screen_off),
                     color = Color(0xFFFFC27A),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.testTag("full-screen-alarm-status")
@@ -359,24 +359,21 @@ private fun AlarmReliabilityCard(
                         .fillMaxWidth()
                         .testTag("open-full-screen-alarm-settings")
                 ) {
-                    Text("Allow full-screen alarms")
+                    Text(stringResource(R.string.alarm_full_screen_allow))
                 }
             }
             if (isXiaomi) {
                 Text(
-                    "On Xiaomi, Redmi and POCO phones, turn on \"Show on Lock screen\" and " +
-                        "\"Display pop-up windows while running in the background\", and " +
-                        "allow Autostart. Otherwise MIUI can block the alarm page or cancel " +
-                        "reminders.",
+                    stringResource(R.string.alarm_xiaomi_tip),
                     color = Color(0xFFFFC27A),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.testTag("xiaomi-alarm-tip")
                 )
                 Button(onClick = onOpenXiaomiPermissions, modifier = Modifier.fillMaxWidth()) {
-                    Text("Open Xiaomi permissions")
+                    Text(stringResource(R.string.alarm_xiaomi_permissions))
                 }
                 OutlinedButton(onClick = onOpenXiaomiAutostart, modifier = Modifier.fillMaxWidth()) {
-                    Text("Open Autostart", color = Color(0xFFC7A2FF))
+                    Text(stringResource(R.string.alarm_xiaomi_autostart), color = Color(0xFFC7A2FF))
                 }
             }
         }

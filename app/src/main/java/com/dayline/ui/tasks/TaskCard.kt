@@ -21,6 +21,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dayline.R
+import androidx.compose.ui.res.stringResource
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskPriority
 import com.dayline.ui.common.DeleteWithConfirmation
@@ -56,7 +58,7 @@ internal fun TaskCard(
                 )
                 if (task.priority == TaskPriority.HIGH) {
                     Text(
-                        text = "HIGH",
+                        text = stringResource(R.string.label_high),
                         color = Color(0xFFB7FF4A),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -71,6 +73,9 @@ internal fun TaskCard(
             task.notes?.let {
                 Text(text = it, color = Color(0xFFC2C7D3), fontSize = 13.sp)
             }
+            val deleteDescription = stringResource(R.string.cd_delete_task, task.title)
+            val editDescription = stringResource(R.string.cd_edit_task, task.title)
+            val completeDescription = stringResource(R.string.cd_complete_task, task.title)
             if (task.status == TaskStatus.COMPLETED) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -78,19 +83,19 @@ internal fun TaskCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Completed",
+                        text = stringResource(R.string.label_completed),
                         color = Color(0xFF59F5D8),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
                     onDelete?.let {
                         DeleteWithConfirmation(
-                            label = "Delete",
-                            dialogTitle = "Delete this task?",
-                            dialogText = "\"${task.title}\" will be removed.",
+                            label = stringResource(R.string.action_delete),
+                            dialogTitle = stringResource(R.string.task_delete_title),
+                            dialogText = stringResource(R.string.task_delete_completed_text, task.title),
                             onConfirm = it,
                             modifier = Modifier.semantics {
-                                contentDescription = "Delete task: ${task.title}"
+                                contentDescription = deleteDescription
                             }
                         )
                     }
@@ -103,7 +108,7 @@ internal fun TaskCard(
                     TextButton(
                         onClick = onEdit,
                         modifier = Modifier.semantics {
-                            contentDescription = "Edit task: ${task.title}"
+                            contentDescription = editDescription
                         }
                     ) {
                         Text("Edit", color = Color(0xFFC7A2FF))
@@ -111,14 +116,14 @@ internal fun TaskCard(
                     Button(
                         onClick = onComplete,
                         modifier = Modifier.semantics {
-                            contentDescription = "Complete task: ${task.title}"
+                            contentDescription = completeDescription
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFB7FF4A),
                             contentColor = Color(0xFF10150B)
                         )
                     ) {
-                        Text("Done")
+                        Text(stringResource(R.string.action_done))
                     }
                 }
             }
@@ -126,9 +131,10 @@ internal fun TaskCard(
     }
 }
 
+@Composable
 internal fun formatTaskDueAt(epochMillis: Long?): String {
-    if (epochMillis == null) return "No deadline"
+    if (epochMillis == null) return stringResource(R.string.task_no_deadline)
     return Instant.ofEpochMilli(epochMillis)
         .atZone(ZoneId.systemDefault())
-        .format(DateTimeFormatter.ofPattern("EEE, MMM d 'at' h:mm a"))
+        .format(DateTimeFormatter.ofPattern(stringResource(R.string.pattern_task_due)))
 }

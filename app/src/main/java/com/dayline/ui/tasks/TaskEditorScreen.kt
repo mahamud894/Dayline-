@@ -35,11 +35,14 @@ import androidx.compose.ui.unit.sp
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskPriority
 import com.dayline.ui.common.DeleteWithConfirmation
+import com.dayline.ui.common.UiText
+import com.dayline.R
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun TaskEditorScreen(
     task: Task?,
-    saveError: String?,
+    saveError: UiText?,
     onBack: () -> Unit,
     onClearError: () -> Unit,
     onSave: (
@@ -72,17 +75,17 @@ fun TaskEditorScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         TextButton(onClick = onBack) {
-            Text("Back", color = Color(0xFFC7A2FF))
+            Text(stringResource(R.string.action_back), color = Color(0xFFC7A2FF))
         }
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text = if (task == null) "QUICK CAPTURE" else "REFINE TASK",
+                text = stringResource(if (task == null) R.string.task_editor_eyebrow_new else R.string.task_editor_eyebrow_edit),
                 color = Color(0xFFB7FF4A),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = if (task == null) "New task" else "Edit task",
+                text = stringResource(if (task == null) R.string.task_editor_title_new else R.string.task_editor_title_edit),
                 color = Color(0xFFF4F5FF),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
@@ -97,7 +100,7 @@ fun TaskEditorScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("task-title"),
-            label = { Text("What needs doing?") },
+            label = { Text(stringResource(R.string.task_field_title)) },
             singleLine = true,
             shape = RoundedCornerShape(18.dp)
         )
@@ -105,7 +108,7 @@ fun TaskEditorScreen(
             value = notes,
             onValueChange = { notes = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Notes (optional)") },
+            label = { Text(stringResource(R.string.task_field_notes)) },
             minLines = 2,
             maxLines = 4,
             shape = RoundedCornerShape(18.dp)
@@ -119,7 +122,7 @@ fun TaskEditorScreen(
         )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text = "PRIORITY",
+                text = stringResource(R.string.task_priority),
                 color = Color(0xFFC2C7D3),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
@@ -128,13 +131,13 @@ fun TaskEditorScreen(
                 FilterChip(
                     selected = priority == TaskPriority.NORMAL,
                     onClick = { priority = TaskPriority.NORMAL },
-                    label = { Text("Normal") },
+                    label = { Text(stringResource(R.string.priority_normal)) },
                     modifier = Modifier.testTag("priority-normal")
                 )
                 FilterChip(
                     selected = priority == TaskPriority.HIGH,
                     onClick = { priority = TaskPriority.HIGH },
-                    label = { Text("High") },
+                    label = { Text(stringResource(R.string.priority_high)) },
                     modifier = Modifier.testTag("priority-high")
                 )
             }
@@ -145,9 +148,9 @@ fun TaskEditorScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Urgent alerts", color = Color(0xFFF4F5FF), fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.task_urgent_alerts), color = Color(0xFFF4F5FF), fontWeight = FontWeight.Medium)
                 Text(
-                    "Allow this task to break quiet settings",
+                    stringResource(R.string.task_urgent_alerts_detail),
                     color = Color(0xFFC2C7D3),
                     fontSize = 12.sp
                 )
@@ -159,7 +162,7 @@ fun TaskEditorScreen(
             )
         }
         saveError?.let {
-            Text(text = it, color = Color(0xFFFF8296), fontSize = 13.sp)
+            Text(text = it.resolve(), color = Color(0xFFFF8296), fontSize = 13.sp)
         }
         Spacer(Modifier.height(4.dp))
         Button(
@@ -182,13 +185,13 @@ fun TaskEditorScreen(
                 contentColor = Color(0xFF10150B)
             )
         ) {
-            Text("Save task", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.task_save), fontWeight = FontWeight.Bold)
         }
         if (task != null) {
             DeleteWithConfirmation(
-                label = "Delete task",
-                dialogTitle = "Delete this task?",
-                dialogText = "\"${task.title}\" and its reminders will be removed.",
+                label = stringResource(R.string.task_delete),
+                dialogTitle = stringResource(R.string.task_delete_title),
+                dialogText = stringResource(R.string.task_delete_text, task.title),
                 onConfirm = onDelete
             )
         }

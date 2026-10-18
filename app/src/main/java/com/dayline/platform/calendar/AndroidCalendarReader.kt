@@ -70,7 +70,7 @@ class AndroidCalendarReader(
         }
     }
 
-    private companion object {
+    internal companion object {
         const val PERMISSION_UNAVAILABLE =
             "Calendar access is unavailable. Allow calendar access in Settings to import events."
         const val PROVIDER_UNAVAILABLE = "Calendar data is currently unavailable."

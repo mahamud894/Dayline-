@@ -29,6 +29,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.dayline.R
+import androidx.compose.ui.res.stringResource
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -50,25 +52,27 @@ fun DeadlineField(
     modifier: Modifier = Modifier
 ) {
     val is24Hour = DateFormat.is24HourFormat(LocalContext.current)
+    val datePattern = stringResource(R.string.pattern_deadline_date)
+    val pickLabel = stringResource(R.string.deadline_pick_label)
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var pickedDate by rememberSaveable { mutableStateOf<LocalDate?>(null) }
 
     Box(modifier = modifier.fillMaxWidth()) {
         OutlinedTextField(
-            value = deadline?.let { formatDeadlineLabel(it, is24Hour, Locale.getDefault()) }
+            value = deadline?.let { formatDeadlineLabel(it, is24Hour, Locale.getDefault(), datePattern) }
                 .orEmpty(),
             onValueChange = {},
             modifier = Modifier.fillMaxWidth(),
             readOnly = true,
-            label = { Text("Deadline (optional)") },
-            placeholder = { Text("Tap to pick a date and time") },
+            label = { Text(stringResource(R.string.deadline_field)) },
+            placeholder = { Text(stringResource(R.string.deadline_placeholder)) },
             trailingIcon = deadline?.let {
                 {
                     TextButton(
                         onClick = { onDeadlineChange(null) },
                         modifier = Modifier.testTag("task-due-at-clear")
                     ) {
-                        Text("Clear", color = Color(0xFFC7A2FF))
+                        Text(stringResource(R.string.action_clear), color = Color(0xFFC7A2FF))
                     }
                 }
             },
@@ -81,7 +85,7 @@ fun DeadlineField(
                 .matchParentSize()
                 .padding(end = if (deadline != null) 88.dp else 0.dp)
                 .clickable(
-                    onClickLabel = "Pick deadline date and time",
+                    onClickLabel = pickLabel,
                     role = Role.Button
                 ) { showDatePicker = true }
                 .testTag("task-due-at")
@@ -110,10 +114,10 @@ fun DeadlineField(
                     },
                     enabled = dateState.selectedDateMillis != null,
                     modifier = Modifier.testTag("deadline-date-confirm")
-                ) { Text("Next") }
+                ) { Text(stringResource(R.string.action_next)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.action_cancel)) }
             }
         ) {
             DatePicker(state = dateState)
@@ -129,7 +133,7 @@ fun DeadlineField(
         )
         AlertDialog(
             onDismissRequest = { pickedDate = null },
-            title = { Text("Deadline time") },
+            title = { Text(stringResource(R.string.deadline_time_title)) },
             text = { TimePicker(state = timeState) },
             confirmButton = {
                 TextButton(
@@ -138,10 +142,10 @@ fun DeadlineField(
                         pickedDate = null
                     },
                     modifier = Modifier.testTag("deadline-time-confirm")
-                ) { Text("OK") }
+                ) { Text(stringResource(R.string.action_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { pickedDate = null }) { Text("Cancel") }
+                TextButton(onClick = { pickedDate = null }) { Text(stringResource(R.string.action_cancel)) }
             }
         )
     }
@@ -179,8 +183,9 @@ internal fun formatDeadlineForSave(deadline: LocalDateTime): String =
 internal fun formatDeadlineLabel(
     deadline: LocalDateTime,
     is24Hour: Boolean,
-    locale: Locale
+    locale: Locale,
+    datePattern: String = "EEE, MMM d"
 ): String {
     val time = if (is24Hour) "HH:mm" else "h:mm a"
-    return deadline.format(DateTimeFormatter.ofPattern("EEE, MMM d · $time", locale))
+    return deadline.format(DateTimeFormatter.ofPattern("$datePattern · $time", locale))
 }

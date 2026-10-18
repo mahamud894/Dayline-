@@ -34,7 +34,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import androidx.compose.ui.res.stringResource
 import com.dayline.DaylineApp
+import com.dayline.R
 import com.dayline.platform.alarm.DeadlineAlarmService
 import com.dayline.platform.reminders.ReminderAction
 import com.dayline.ui.theme.DaylineTheme
@@ -105,7 +107,7 @@ class DeadlineAlarmActivity : ComponentActivity() {
         val pattern = if (DateFormat.is24HourFormat(this)) "HH:mm" else "h:mm a"
         val time = Instant.ofEpochMilli(dueAt).atZone(ZoneId.systemDefault())
             .format(DateTimeFormatter.ofPattern(pattern))
-        return "Deadline was $time"
+        return getString(R.string.alarm_deadline_was, time)
     }
 
     companion object {
@@ -139,7 +141,7 @@ private fun DeadlineAlarmScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "DEADLINE",
+            text = stringResource(R.string.label_deadline),
             color = Color(0xFFB7FF4A),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
@@ -171,7 +173,7 @@ private fun DeadlineAlarmScreen(
                 contentColor = Color(0xFF10150B)
             )
         ) {
-            Text("Done", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.action_done), fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(Modifier.height(14.dp))
         OutlinedButton(
@@ -182,14 +184,14 @@ private fun DeadlineAlarmScreen(
                 .testTag("alarm-snooze"),
             shape = RoundedCornerShape(20.dp)
         ) {
-            Text("Snooze", color = Color(0xFFC7A2FF), fontSize = 18.sp)
+            Text(stringResource(R.string.action_snooze), color = Color(0xFFC7A2FF), fontSize = 18.sp)
         }
         Spacer(Modifier.height(8.dp))
         TextButton(
             onClick = { onAction(ReminderAction.DISMISS) },
             modifier = Modifier.testTag("alarm-dismiss")
         ) {
-            Text("Dismiss", color = Color(0xFFC2C7D3), fontSize = 16.sp)
+            Text(stringResource(R.string.action_dismiss), color = Color(0xFFC2C7D3), fontSize = 16.sp)
         }
     }
 }

@@ -18,6 +18,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dayline.R
+import androidx.compose.ui.res.stringResource
 import com.dayline.domain.model.Habit
 
 @Composable
@@ -27,6 +29,9 @@ internal fun HabitCard(
     onComplete: () -> Unit,
     onEdit: (() -> Unit)? = null
 ) {
+    val completedDescription = stringResource(R.string.cd_completed_habit, habit.title)
+    val completeDescription = stringResource(R.string.cd_complete_habit, habit.title)
+    val editDescription = stringResource(R.string.cd_edit_habit, habit.title)
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -47,9 +52,9 @@ internal fun HabitCard(
                 }
                 if (completedToday) {
                     Text(
-                        text = "Done today",
+                        text = stringResource(R.string.habit_done_today),
                         modifier = Modifier.semantics {
-                            contentDescription = "Completed today: ${habit.title}"
+                            contentDescription = completedDescription
                         },
                         color = Color(0xFF59F5D8),
                         fontSize = 12.sp,
@@ -59,10 +64,10 @@ internal fun HabitCard(
                     TextButton(
                         onClick = onComplete,
                         modifier = Modifier.semantics {
-                            contentDescription = "Complete habit: ${habit.title}"
+                            contentDescription = completeDescription
                         }
                     ) {
-                        Text("Mark done", color = Color(0xFF59F5D8))
+                        Text(stringResource(R.string.habit_mark_done), color = Color(0xFF59F5D8))
                     }
                 }
             }
@@ -71,7 +76,7 @@ internal fun HabitCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "${habit.currentStreak} day streak",
+                    text = stringResource(R.string.today_streak, habit.currentStreak),
                     color = Color(0xFFC2C7D3),
                     fontSize = 12.sp
                 )
@@ -79,10 +84,10 @@ internal fun HabitCard(
                     TextButton(
                         onClick = onEdit,
                         modifier = Modifier.semantics {
-                            contentDescription = "Edit habit: ${habit.title}"
+                            contentDescription = editDescription
                         }
                     ) {
-                        Text("Edit", color = Color(0xFFC7A2FF))
+                        Text(stringResource(R.string.action_edit), color = Color(0xFFC7A2FF))
                     }
                 }
             }
@@ -90,24 +95,25 @@ internal fun HabitCard(
     }
 }
 
+@Composable
 internal fun com.dayline.domain.model.HabitSchedule.displayName(): String =
     when (this) {
-        com.dayline.domain.model.HabitSchedule.Daily -> "Daily"
+        com.dayline.domain.model.HabitSchedule.Daily -> stringResource(R.string.schedule_daily)
         is com.dayline.domain.model.HabitSchedule.Weekdays -> when {
             days == setOf(
                 java.time.DayOfWeek.SATURDAY,
                 java.time.DayOfWeek.SUNDAY
-            ) -> "Weekends"
+            ) -> stringResource(R.string.schedule_weekends)
             days == setOf(
                 java.time.DayOfWeek.MONDAY,
                 java.time.DayOfWeek.TUESDAY,
                 java.time.DayOfWeek.WEDNESDAY,
                 java.time.DayOfWeek.THURSDAY,
                 java.time.DayOfWeek.FRIDAY
-            ) -> "Weekdays"
+            ) -> stringResource(R.string.schedule_weekdays)
             else -> days.sortedBy(java.time.DayOfWeek::getValue)
-                .joinToString { it.name.lowercase().replaceFirstChar(Char::uppercase) }
+                .joinToString { it.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault()) }
         }
         is com.dayline.domain.model.HabitSchedule.EveryDays ->
-            if (interval == 1) "Every day" else "Every $interval days"
+            if (interval == 1) stringResource(R.string.schedule_every_day) else stringResource(R.string.schedule_every_n_days, interval)
     }

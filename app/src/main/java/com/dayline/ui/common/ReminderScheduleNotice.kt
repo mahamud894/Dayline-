@@ -6,15 +6,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import com.dayline.R
 import com.dayline.domain.reminders.ReminderScheduleStatus
 
 @Composable
 fun ReminderScheduleNotice(status: ReminderScheduleStatus?) {
     val message = when (status) {
         ReminderScheduleStatus.WORK_MANAGER_FALLBACK ->
-            "Android may delay deadline reminders. Allow exact alarms for on-time delivery."
+            stringResource(R.string.notice_exact_alarm)
         ReminderScheduleStatus.NOTIFICATION_PERMISSION_REQUIRED ->
-            "Allow notifications to receive deadline reminders."
+            stringResource(R.string.notice_notifications)
         else -> null
     }
     if (message != null) {

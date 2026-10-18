@@ -3,7 +3,9 @@ package com.dayline.ui.habits
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dayline.R
 import com.dayline.data.HabitRepository
+import com.dayline.ui.common.UiText
 import com.dayline.domain.model.Habit
 import com.dayline.domain.model.HabitSchedule
 import java.time.Duration
@@ -35,8 +37,8 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
     private val mutableCompletedHabitIds = MutableStateFlow<Set<String>>(emptySet())
     val completedHabitIds: StateFlow<Set<String>> = mutableCompletedHabitIds.asStateFlow()
 
-    private val mutableSaveError = MutableStateFlow<String?>(null)
-    val saveError: StateFlow<String?> = mutableSaveError.asStateFlow()
+    private val mutableSaveError = MutableStateFlow<UiText?>(null)
+    val saveError: StateFlow<UiText?> = mutableSaveError.asStateFlow()
     private var midnightRefreshJob: Job? = null
 
     init {
@@ -62,7 +64,7 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
     ) {
         val cleanTitle = title.trim()
         if (cleanTitle.isEmpty()) {
-            mutableSaveError.value = "Add a name before saving."
+            mutableSaveError.value = UiText(R.string.error_habit_name_required)
             return
         }
         mutableSaveError.value = null

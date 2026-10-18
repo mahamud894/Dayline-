@@ -45,6 +45,8 @@ import com.dayline.domain.summary.rankDailySummary
 import com.dayline.ui.habits.HabitCard
 import com.dayline.ui.common.ReminderScheduleNotice
 import com.dayline.ui.tasks.formatTaskDueAt
+import com.dayline.R
+import androidx.compose.ui.res.stringResource
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -114,19 +116,19 @@ fun TodayScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(
-                    text = "DAYLINE / TODAY",
+                    text = stringResource(R.string.today_eyebrow),
                     color = Color(0xFFB7FF4A),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Make today count",
+                    text = stringResource(R.string.today_title),
                     color = Color(0xFFF4F5FF),
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = today.format(DateTimeFormatter.ofPattern("EEEE, MMMM d")),
+                    text = today.format(DateTimeFormatter.ofPattern(stringResource(R.string.pattern_long_date))),
                     color = Color(0xFFC2C7D3),
                     fontSize = 14.sp
                 )
@@ -144,8 +146,8 @@ fun TodayScreen(
         if (calendarImportEnabled) {
             item {
                 SectionHeader(
-                    title = "Calendar commitments",
-                    detail = "${calendarCommitments.size} TODAY"
+                    title = stringResource(R.string.today_calendar_section),
+                    detail = stringResource(R.string.today_count_today, calendarCommitments.size)
                 )
             }
             if (calendarUnavailableMessage != null) {
@@ -153,7 +155,7 @@ fun TodayScreen(
                     EmptyCard(calendarUnavailableMessage, testTag = "today-calendar-unavailable")
                 }
             } else if (calendarCommitments.isEmpty()) {
-                item { EmptyCard("No calendar commitments today.") }
+                item { EmptyCard(stringResource(R.string.today_calendar_empty)) }
             } else {
                 items(calendarCommitments, key = CalendarCommitment::id) { commitment ->
                     CalendarCommitmentCard(commitment)
@@ -161,11 +163,11 @@ fun TodayScreen(
             }
         }
         item {
-            SectionHeader(title = "Focus queue", detail = "TOP PRIORITIES")
+            SectionHeader(title = stringResource(R.string.today_focus_section), detail = stringResource(R.string.today_focus_detail))
         }
         if (summary.isEmpty()) {
             item {
-                EmptyCard("A little breathing room. Add something when you're ready.")
+                EmptyCard(stringResource(R.string.today_focus_empty))
             }
         } else {
             items(summary) { item ->
@@ -173,20 +175,20 @@ fun TodayScreen(
             }
         }
         item {
-            SectionHeader(title = "Hard Deadlines", detail = "${todayDeadlines.size} TODAY")
+            SectionHeader(title = stringResource(R.string.today_deadlines_section), detail = stringResource(R.string.today_count_today, todayDeadlines.size))
         }
         if (todayDeadlines.isEmpty()) {
-            item { EmptyCard("No fixed-time deadlines on your calendar today.") }
+            item { EmptyCard(stringResource(R.string.today_deadlines_empty)) }
         } else {
             items(todayDeadlines, key = Task::id) { task ->
                 DeadlineCard(task)
             }
         }
         item {
-            SectionHeader(title = "Daily Habits", detail = "${todayHabits.size} SCHEDULED")
+            SectionHeader(title = stringResource(R.string.today_habits_section), detail = stringResource(R.string.today_count_scheduled, todayHabits.size))
         }
         if (todayHabits.isEmpty()) {
-            item { EmptyCard("Your routines will appear here on their scheduled days.") }
+            item { EmptyCard(stringResource(R.string.today_habits_empty)) }
         } else {
             items(todayHabits, key = Habit::id) { habit ->
                 HabitCard(
@@ -215,15 +217,15 @@ private fun ProgressCard(completed: Int, total: Int) {
         ) {
             ProgressRing(completed, total)
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("TODAY IN FOCUS", color = Color(0xFFC2C7D3), fontSize = 11.sp)
+                Text(stringResource(R.string.today_in_focus), color = Color(0xFFC2C7D3), fontSize = 11.sp)
                 Text(
-                    text = if (total == 0) "Start with one thing" else "$completed of $total done",
+                    text = if (total == 0) stringResource(R.string.today_progress_none) else stringResource(R.string.today_progress, completed, total),
                     color = Color(0xFFF4F5FF),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    "Small steps keep the day moving.",
+                    stringResource(R.string.today_progress_hint),
                     color = Color(0xFFC2C7D3),
                     fontSize = 12.sp
                 )
@@ -235,12 +237,13 @@ private fun ProgressCard(completed: Int, total: Int) {
 @Composable
 private fun ProgressRing(completed: Int, total: Int) {
     val progress = if (total == 0) 0f else completed.toFloat() / total
+    val progressDescription = stringResource(R.string.today_progress_description, completed, total)
     Box(
         modifier = Modifier
             .size(76.dp)
             .testTag("today-progress")
             .semantics {
-                contentDescription = "Progress: $completed of $total deadlines complete"
+                contentDescription = progressDescription
             },
         contentAlignment = Alignment.Center
     ) {
@@ -285,13 +288,13 @@ private fun NextCommitmentCard(
     val title = if (showCalendarEvent) {
         calendarCommitment?.title.orEmpty()
     } else {
-        task?.title ?: "Nothing on the radar"
+        task?.title ?: stringResource(R.string.today_next_none_title)
     }
     val detail = if (showCalendarEvent) {
         formatCalendarCommitmentTime(requireNotNull(calendarCommitment))
     } else {
         task?.let { formatTaskDueAt(it.dueAtEpochMillis) }
-            ?: "Your day is open. Keep it that way or add a task."
+            ?: stringResource(R.string.today_next_none_detail)
     }
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -303,7 +306,7 @@ private fun NextCommitmentCard(
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                if (showCalendarEvent) "Next calendar event" else "Next commitment",
+                if (showCalendarEvent) stringResource(R.string.today_next_calendar) else stringResource(R.string.today_next_commitment),
                 color = Color(0xFFC7A2FF),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold
@@ -337,7 +340,7 @@ private fun CalendarCommitmentCard(commitment: CalendarCommitment) {
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                "CALENDAR EVENT",
+                stringResource(R.string.today_calendar_event),
                 color = Color(0xFF59F5D8),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold
@@ -356,8 +359,9 @@ private fun CalendarCommitmentCard(commitment: CalendarCommitment) {
     }
 }
 
+@Composable
 private fun formatCalendarCommitmentTime(commitment: CalendarCommitment): String {
-    val formatter = DateTimeFormatter.ofPattern("h:mm a")
+    val formatter = DateTimeFormatter.ofPattern(stringResource(R.string.pattern_time))
     val zoneId = ZoneId.systemDefault()
     val start = Instant.ofEpochMilli(commitment.startAtEpochMillis)
         .atZone(zoneId)
@@ -407,7 +411,7 @@ private fun SummaryCard(item: SummaryItem) {
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             Text(
-                text = item.category.name.replace('_', ' '),
+                text = summaryCategoryLabel(item.category),
                 color = accent,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold
@@ -420,7 +424,7 @@ private fun SummaryCard(item: SummaryItem) {
             )
             Text(
                 text = item.task?.let { formatTaskDueAt(it.dueAtEpochMillis) }
-                    ?: item.habit?.let { "${it.currentStreak} day streak" }.orEmpty(),
+                    ?: item.habit?.let { stringResource(R.string.today_streak, it.currentStreak) }.orEmpty(),
                 color = Color(0xFFC2C7D3),
                 fontSize = 12.sp
             )
@@ -446,7 +450,7 @@ private fun DeadlineCard(task: Task) {
                 Text(formatTaskDueAt(task.dueAtEpochMillis), color = Color(0xFFC2C7D3), fontSize = 12.sp)
             }
             Text(
-                text = if (task.status == TaskStatus.OVERDUE) "OVERDUE" else "DUE TODAY",
+                text = if (task.status == TaskStatus.OVERDUE) stringResource(R.string.label_overdue) else stringResource(R.string.label_due_today),
                 color = if (task.status == TaskStatus.OVERDUE) Color(0xFFFF8296) else Color(0xFFC7A2FF),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold
@@ -474,3 +478,13 @@ private fun EmptyCard(message: String, testTag: String? = null) {
         )
     }
 }
+
+@Composable
+private fun summaryCategoryLabel(category: SummaryCategory): String = stringResource(
+    when (category) {
+        SummaryCategory.OVERDUE -> R.string.label_overdue
+        SummaryCategory.DEADLINE -> R.string.label_deadline
+        SummaryCategory.HIGH_PRIORITY -> R.string.label_high_priority
+        SummaryCategory.HABIT -> R.string.label_habit
+    }
+)

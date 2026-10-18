@@ -18,6 +18,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dayline.R
+import androidx.compose.ui.res.stringResource
 import com.dayline.domain.model.Habit
 
 @Composable
@@ -36,13 +38,13 @@ fun HabitsScreen(
     ) {
         item {
             Text(
-                text = "RITUALS, NOT RESOLUTIONS",
+                text = stringResource(R.string.habits_eyebrow),
                 color = Color(0xFF59F5D8),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Your habits",
+                text = stringResource(R.string.habits_title),
                 modifier = Modifier.padding(top = 4.dp, bottom = 10.dp),
                 color = Color(0xFFF4F5FF),
                 fontSize = 30.sp,
@@ -59,13 +61,13 @@ fun HabitsScreen(
                     contentColor = Color(0xFF59F5D8)
                 )
             ) {
-                Text("+  Add a habit", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.habits_add), fontWeight = FontWeight.SemiBold)
             }
         }
         if (habits.isEmpty()) {
             item {
                 Text(
-                    text = "Build a routine that fits your real week.",
+                    text = stringResource(R.string.habits_empty),
                     modifier = Modifier.padding(vertical = 20.dp),
                     color = Color(0xFFC2C7D3)
                 )

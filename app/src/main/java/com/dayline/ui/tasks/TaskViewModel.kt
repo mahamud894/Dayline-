@@ -3,7 +3,9 @@ package com.dayline.ui.tasks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dayline.R
 import com.dayline.data.TaskRepository
+import com.dayline.ui.common.UiText
 import com.dayline.domain.reminders.ReminderScheduler
 import com.dayline.domain.reminders.ReminderScheduleStatus
 import com.dayline.domain.model.Task
@@ -35,8 +37,8 @@ class TaskViewModel(
         initialValue = emptyList()
     )
 
-    private val mutableSaveError = MutableStateFlow<String?>(null)
-    val saveError: StateFlow<String?> = mutableSaveError.asStateFlow()
+    private val mutableSaveError = MutableStateFlow<UiText?>(null)
+    val saveError: StateFlow<UiText?> = mutableSaveError.asStateFlow()
 
     private val mutableReminderScheduleStatus =
         MutableStateFlow<ReminderScheduleStatus?>(null)
@@ -73,7 +75,7 @@ class TaskViewModel(
     ) {
         val cleanTitle = title.trim()
         if (cleanTitle.isEmpty()) {
-            mutableSaveError.value = "Add a title before saving."
+            mutableSaveError.value = UiText(R.string.error_task_title_required)
             return
         }
 
@@ -85,7 +87,7 @@ class TaskViewModel(
                     .toEpochMilli()
             }
         } catch (_: DateTimeParseException) {
-            mutableSaveError.value = "Use YYYY-MM-DD HH:MM for the local deadline."
+            mutableSaveError.value = UiText(R.string.error_task_deadline_format)
             return
         }
 

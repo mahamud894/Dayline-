@@ -38,12 +38,12 @@ class DaylineNotificationFactory(private val context: Context) :
         val channels = listOf(
             NotificationChannel(
                 CHANNEL_STANDARD,
-                "Task reminders",
+                context.getString(R.string.channel_reminders),
                 NotificationManager.IMPORTANCE_DEFAULT
             ),
             NotificationChannel(
                 CHANNEL_URGENT,
-                "Urgent task reminders",
+                context.getString(R.string.channel_urgent),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 enableVibration(true)
@@ -51,7 +51,7 @@ class DaylineNotificationFactory(private val context: Context) :
             },
             NotificationChannel(
                 CHANNEL_URGENT_DND,
-                "Urgent reminders allowed during Do Not Disturb",
+                context.getString(R.string.channel_urgent_dnd),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 enableVibration(true)
@@ -61,18 +61,18 @@ class DaylineNotificationFactory(private val context: Context) :
             },
             NotificationChannel(
                 CHANNEL_OVERDUE,
-                "Overdue tasks",
+                context.getString(R.string.channel_overdue),
                 NotificationManager.IMPORTANCE_HIGH
             ),
             NotificationChannel(
                 CHANNEL_SUMMARY,
-                "Daily summaries",
+                context.getString(R.string.channel_summary),
                 NotificationManager.IMPORTANCE_LOW
             ),
             // Silent: DeadlineAlarmService plays the looping alarm sound itself.
             NotificationChannel(
                 CHANNEL_ALARM,
-                "Deadline alarms",
+                context.getString(R.string.channel_alarm),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 setSound(null, null)
@@ -97,10 +97,10 @@ class DaylineNotificationFactory(private val context: Context) :
             }
         }
         val title = when (kind) {
-            ReminderKind.TWO_HOURS -> "Coming up in two hours"
-            ReminderKind.FINAL_THIRTY_MINUTES -> "Deadline approaching"
-            ReminderKind.SNOOZE -> "Snoozed reminder"
-            ReminderKind.OVERDUE -> "Deadline passed"
+            ReminderKind.TWO_HOURS -> context.getString(R.string.notif_two_hours)
+            ReminderKind.FINAL_THIRTY_MINUTES -> context.getString(R.string.notif_approaching)
+            ReminderKind.SNOOZE -> context.getString(R.string.notif_snoozed)
+            ReminderKind.OVERDUE -> context.getString(R.string.notif_passed)
         }
         notificationManager.notify(
             task.id,
@@ -115,7 +115,7 @@ class DaylineNotificationFactory(private val context: Context) :
         notificationManager.notify(
             task.id,
             TASK_NOTIFICATION_ID,
-            buildTaskNotification(task, "Overdue task", CHANNEL_OVERDUE, ongoing = true)
+            buildTaskNotification(task, context.getString(R.string.notif_overdue), CHANNEL_OVERDUE, ongoing = true)
         )
     }
 
@@ -140,7 +140,7 @@ class DaylineNotificationFactory(private val context: Context) :
         )
         return Notification.Builder(context, CHANNEL_ALARM)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle("Deadline now")
+            .setContentTitle(context.getString(R.string.notif_deadline_now))
             .setContentText(title)
             .setStyle(Notification.BigTextStyle().bigText(title))
             .setContentIntent(alarmScreen)
@@ -148,9 +148,9 @@ class DaylineNotificationFactory(private val context: Context) :
             .setCategory(Notification.CATEGORY_ALARM)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setOngoing(true)
-            .addAction(action(taskId, ReminderAction.DONE, "Done"))
-            .addAction(action(taskId, ReminderAction.SNOOZE, "Snooze"))
-            .addAction(action(taskId, ReminderAction.DISMISS, "Dismiss"))
+            .addAction(action(taskId, ReminderAction.DONE, context.getString(R.string.action_done)))
+            .addAction(action(taskId, ReminderAction.SNOOZE, context.getString(R.string.action_snooze)))
+            .addAction(action(taskId, ReminderAction.DISMISS, context.getString(R.string.action_dismiss)))
             .build()
     }
 
@@ -177,13 +177,13 @@ class DaylineNotificationFactory(private val context: Context) :
         ensureNotificationsEnabled()
         val body = items.take(5).mapIndexed { index, item ->
             val label = when (item.category) {
-                SummaryCategory.OVERDUE -> "OVERDUE"
-                SummaryCategory.DEADLINE -> "DEADLINE"
-                SummaryCategory.HIGH_PRIORITY -> "HIGH PRIORITY"
-                SummaryCategory.HABIT -> "HABIT"
+                SummaryCategory.OVERDUE -> context.getString(R.string.label_overdue)
+                SummaryCategory.DEADLINE -> context.getString(R.string.label_deadline)
+                SummaryCategory.HIGH_PRIORITY -> context.getString(R.string.label_high_priority)
+                SummaryCategory.HABIT -> context.getString(R.string.label_habit)
             }
             "${index + 1}. $label · ${item.task?.title ?: item.habit?.title.orEmpty()}"
-        }.ifEmpty { listOf("No urgent commitments on your list today.") }
+        }.ifEmpty { listOf(context.getString(R.string.notif_summary_empty)) }
         val contentIntent = PendingIntent.getActivity(
             context,
             SUMMARY_NOTIFICATION_ID,
@@ -196,11 +196,11 @@ class DaylineNotificationFactory(private val context: Context) :
         )
         val notification = Notification.Builder(context, CHANNEL_SUMMARY)
             .setSmallIcon(R.drawable.ic_stat_dayline)
-            .setContentTitle("Dayline · Today")
-            .setContentText("${items.size} priorities for $date")
+            .setContentTitle(context.getString(R.string.notif_summary_title))
+            .setContentText(context.getString(R.string.notif_summary_text, items.size, date.toString()))
             .setStyle(Notification.BigTextStyle().bigText(body.joinToString("\n")))
             .setContentIntent(contentIntent)
-            .addAction(Notification.Action.Builder(null, "View all", contentIntent).build())
+            .addAction(Notification.Action.Builder(null, context.getString(R.string.notif_view_all), contentIntent).build())
             .setCategory(Notification.CATEGORY_EVENT)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
             .setOngoing(true)
@@ -238,9 +238,9 @@ class DaylineNotificationFactory(private val context: Context) :
             .setOnlyAlertOnce(ongoing)
             .setCategory(Notification.CATEGORY_REMINDER)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
-            .addAction(action(task.id, ReminderAction.DONE, "Done"))
-            .addAction(action(task.id, ReminderAction.SNOOZE, "Snooze"))
-            .addAction(action(task.id, ReminderAction.DISMISS, "Dismiss"))
+            .addAction(action(task.id, ReminderAction.DONE, context.getString(R.string.action_done)))
+            .addAction(action(task.id, ReminderAction.SNOOZE, context.getString(R.string.action_snooze)))
+            .addAction(action(task.id, ReminderAction.DISMISS, context.getString(R.string.action_dismiss)))
         return builder.build()
     }
 

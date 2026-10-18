@@ -19,6 +19,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dayline.R
+import androidx.compose.ui.res.stringResource
 import com.dayline.domain.model.Habit
 
 @Composable
@@ -38,13 +40,13 @@ fun ProfileScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = "YOUR MOMENTUM",
+                    text = stringResource(R.string.profile_eyebrow),
                     color = Color(0xFFB7FF4A),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Your progress",
+                    text = stringResource(R.string.profile_title),
                     color = Color(0xFFF4F5FF),
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Bold
@@ -62,20 +64,20 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "BEST STREAK",
+                        text = stringResource(R.string.profile_best_streak),
                         color = Color(0xFF59F5D8),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "$bestStreak days",
+                        text = stringResource(R.string.profile_days, bestStreak),
                         modifier = Modifier.testTag("best-streak-value"),
                         color = Color(0xFFF4F5FF),
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Your longest run stays yours, even after a reset.",
+                        text = stringResource(R.string.profile_best_hint),
                         color = Color(0xFFC2C7D3),
                         fontSize = 13.sp
                     )
@@ -92,15 +94,15 @@ fun ProfileScreen(
                     modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("CURRENT RHYTHM", color = Color(0xFFC7A2FF), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.profile_current_rhythm), color = Color(0xFFC7A2FF), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Text(
-                        text = "$currentStreak active habit days",
+                        text = stringResource(R.string.profile_active_days, currentStreak),
                         color = Color(0xFFF4F5FF),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "${habits.size} habits in your orbit",
+                        text = stringResource(R.string.profile_habit_count, habits.size),
                         color = Color(0xFFC2C7D3),
                         fontSize = 13.sp
                     )
@@ -114,7 +116,7 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .testTag("open-settings")
             ) {
-                Text("Settings")
+                Text(stringResource(R.string.settings_title))
             }
         }
     }

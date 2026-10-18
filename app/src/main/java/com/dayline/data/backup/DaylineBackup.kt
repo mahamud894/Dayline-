@@ -1,6 +1,8 @@
 package com.dayline.data.backup
 
+import androidx.annotation.StringRes
 import androidx.room.withTransaction
+import com.dayline.R
 import com.dayline.data.local.DaylineDatabase
 import com.dayline.data.local.HabitCompletionEntity
 import com.dayline.data.local.HabitEntity
@@ -14,8 +16,9 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
-class BackupFormatException(message: String, cause: Throwable? = null) :
-    Exception(message, cause)
+/** [reason] is a user-facing string resource explaining what is wrong with the file. */
+class BackupFormatException(@StringRes val reason: Int, cause: Throwable? = null) :
+    Exception("Invalid Dayline backup", cause)
 
 /**
  * Exports everything the user owns (tasks, habits, habit history, settings) as one JSON
@@ -73,16 +76,14 @@ class DaylineBackup(
         val root = try {
             JSONObject(json)
         } catch (exception: JSONException) {
-            throw BackupFormatException("This file isn't a Dayline backup.", exception)
+            throw BackupFormatException(R.string.error_backup_not_dayline, exception)
         }
         if (root.optString("format") != FORMAT) {
-            throw BackupFormatException("This file isn't a Dayline backup.")
+            throw BackupFormatException(R.string.error_backup_not_dayline)
         }
         val version = root.optInt("version", -1)
         if (version !in 1..VERSION) {
-            throw BackupFormatException(
-                "This backup was made by a newer version of Dayline. Update the app first."
-            )
+            throw BackupFormatException(R.string.error_backup_newer)
         }
         return try {
             val tasks = root.getJSONArray("tasks").objects().map(::taskFromJson)
@@ -96,14 +97,14 @@ class DaylineBackup(
             completions.forEach { completion ->
                 LocalDate.parse(completion.localDate)
                 if (completion.habitId !in habitIds) {
-                    throw BackupFormatException("The backup has history for a missing habit.")
+                    throw BackupFormatException(R.string.error_backup_damaged)
                 }
             }
             Decoded(tasks, habits, completions, settingsFromJson(root.getJSONObject("settings")))
         } catch (exception: BackupFormatException) {
             throw exception
         } catch (exception: Exception) {
-            throw BackupFormatException("This backup file is damaged or incomplete.", exception)
+            throw BackupFormatException(R.string.error_backup_damaged, exception)
         }
     }
 
@@ -170,7 +171,7 @@ class DaylineBackup(
         morningSummaryTime = LocalTime.parse(json.getString("morningSummaryTime")),
         morningSummaryEnabled = json.getBoolean("morningSummaryEnabled"),
         snoozeMinutes = json.getInt("snoozeMinutes").also {
-            if (it <= 0) throw BackupFormatException("The backup has an invalid snooze time.")
+            if (it <= 0) throw BackupFormatException(R.string.error_backup_damaged)
         },
         calendarImportEnabled = json.getBoolean("calendarImportEnabled")
     )

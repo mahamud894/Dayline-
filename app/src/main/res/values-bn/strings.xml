@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Date and time patterns (java.time) -->
+    <string name="pattern_long_date">EEEE, d MMMM</string>
+    <string name="pattern_short_date">d MMM</string>
+    <string name="pattern_time">h:mm a</string>
+    <string name="pattern_task_due">EEE, d MMM, h:mm a</string>
+    <string name="pattern_deadline_date">EEE, d MMM</string>
+
+    <!-- Shared actions and labels -->
+    <string name="action_back">পেছনে</string>
+    <string name="action_cancel">বাতিল</string>
+    <string name="action_clear">মুছুন</string>
+    <string name="action_delete">মুছে ফেলুন</string>
+    <string name="action_dismiss">বন্ধ করুন</string>
+    <string name="action_done">সম্পন্ন</string>
+    <string name="action_edit">সম্পাদনা</string>
+    <string name="action_next">পরবর্তী</string>
+    <string name="action_ok">ঠিক আছে</string>
+    <string name="action_snooze">স্নুজ</string>
+    <string name="label_completed">সম্পন্ন</string>
+    <string name="label_deadline">ডেডলাইন</string>
+    <string name="label_due_today">আজকের মধ্যে</string>
+    <string name="label_habit">অভ্যাস</string>
+    <string name="label_high">জরুরি</string>
+    <string name="label_high_priority">বেশি গুরুত্বপূর্ণ</string>
+    <string name="label_overdue">সময় পেরিয়ে গেছে</string>
+    <string name="priority_normal">সাধারণ</string>
+    <string name="priority_high">জরুরি</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">আজ</string>
+    <string name="nav_tasks">কাজ</string>
+    <string name="nav_habits">অভ্যাস</string>
+    <string name="nav_profile">প্রোফাইল</string>
+    <string name="cd_add_task">নতুন কাজ যোগ করুন</string>
+
+    <!-- Today -->
+    <string name="today_eyebrow">DAYLINE / আজ</string>
+    <string name="today_title">আজকের দিনটা কাজে লাগান</string>
+    <string name="today_in_focus">আজকের ফোকাস</string>
+    <string name="today_progress_none">একটা কাজ দিয়ে শুরু করুন</string>
+    <string name="today_progress">%2$d-এর মধ্যে %1$dটি সম্পন্ন</string>
+    <string name="today_progress_hint">ছোট ছোট পদক্ষেপেই দিন এগোয়।</string>
+    <string name="today_progress_description">অগ্রগতি: %2$dটি ডেডলাইনের মধ্যে %1$dটি সম্পন্ন</string>
+    <string name="today_next_commitment">পরের কাজ</string>
+    <string name="today_next_calendar">পরের ক্যালেন্ডার ইভেন্ট</string>
+    <string name="today_next_none_title">আপাতত কিছু নেই</string>
+    <string name="today_next_none_detail">আজকের দিনটা ফাঁকা। চাইলে এভাবেই রাখুন, নয়তো একটা কাজ যোগ করুন।</string>
+    <string name="today_calendar_section">ক্যালেন্ডারের কাজ</string>
+    <string name="today_calendar_empty">আজ ক্যালেন্ডারে কিছু নেই।</string>
+    <string name="today_calendar_event">ক্যালেন্ডার ইভেন্ট</string>
+    <string name="today_count_today">আজ %1$dটি</string>
+    <string name="today_count_scheduled">%1$dটি নির্ধারিত</string>
+    <string name="today_focus_section">ফোকাসের তালিকা</string>
+    <string name="today_focus_detail">সবচেয়ে জরুরি</string>
+    <string name="today_focus_empty">একটু হাঁফ ছাড়ার সময়। প্রস্তুত হলে কিছু যোগ করুন।</string>
+    <string name="today_deadlines_section">নির্দিষ্ট ডেডলাইন</string>
+    <string name="today_deadlines_empty">আজ নির্দিষ্ট সময়ের কোনো ডেডলাইন নেই।</string>
+    <string name="today_habits_section">আজকের অভ্যাস</string>
+    <string name="today_habits_empty">আপনার অভ্যাসগুলো নির্ধারিত দিনে এখানে দেখাবে।</string>
+    <string name="today_streak">টানা %1$d দিন</string>
+    <string name="calendar_permission_unavailable">ক্যালেন্ডারের অনুমতি নেই। ইভেন্ট আনতে Settings-এ ক্যালেন্ডারের অনুমতি দিন।</string>
+    <string name="calendar_provider_unavailable">এই মুহূর্তে ক্যালেন্ডারের তথ্য পাওয়া যাচ্ছে না।</string>
+    <string name="calendar_load_failed">ক্যালেন্ডারের কাজ আনা যায়নি: %1$s</string>
+
+    <!-- Tasks -->
+    <string name="tasks_eyebrow">কাজের তালিকা</string>
+    <string name="tasks_title">আপনার কাজ</string>
+    <string name="tasks_search">কাজ খুঁজুন</string>
+    <string name="cd_clear_search">খোঁজা মুছুন</string>
+    <string name="tasks_open">বাকি কাজ</string>
+    <string name="tasks_empty">কোনো কাজ বাকি নেই।</string>
+    <string name="tasks_no_match">\"%1$s\"-এর সাথে মেলে এমন কোনো বাকি কাজ নেই।</string>
+    <string name="tasks_completed">সম্পন্ন কাজ</string>
+    <string name="task_no_deadline">ডেডলাইন নেই</string>
+    <string name="cd_edit_task">কাজ সম্পাদনা: %1$s</string>
+    <string name="cd_complete_task">কাজ সম্পন্ন করুন: %1$s</string>
+    <string name="cd_delete_task">কাজ মুছুন: %1$s</string>
+    <string name="notice_exact_alarm">Android রিমাইন্ডার দেরিতে দিতে পারে। ঠিক সময়ে পেতে exact alarm-এর অনুমতি দিন।</string>
+    <string name="notice_notifications">ডেডলাইনের রিমাইন্ডার পেতে নোটিফিকেশনের অনুমতি দিন।</string>
+
+    <!-- Task editor -->
+    <string name="task_editor_eyebrow_new">দ্রুত লিখে রাখুন</string>
+    <string name="task_editor_eyebrow_edit">কাজটা ঠিক করুন</string>
+    <string name="task_editor_title_new">নতুন কাজ</string>
+    <string name="task_editor_title_edit">কাজ সম্পাদনা</string>
+    <string name="task_field_title">কী করতে হবে?</string>
+    <string name="task_field_notes">নোট (ঐচ্ছিক)</string>
+    <string name="task_priority">গুরুত্ব</string>
+    <string name="task_urgent_alerts">জরুরি সতর্কতা</string>
+    <string name="task_urgent_alerts_detail">নীরব মোড চালু থাকলেও এই কাজের রিমাইন্ডার আসবে</string>
+    <string name="task_save">কাজ সংরক্ষণ করুন</string>
+    <string name="task_delete">কাজ মুছে ফেলুন</string>
+    <string name="task_delete_title">কাজটা মুছে ফেলবেন?</string>
+    <string name="task_delete_text">\"%1$s\" আর এর সব রিমাইন্ডার মুছে যাবে।</string>
+    <string name="task_delete_completed_text">\"%1$s\" মুছে যাবে।</string>
+    <string name="deadline_field">ডেডলাইন (ঐচ্ছিক)</string>
+    <string name="deadline_placeholder">তারিখ ও সময় বাছতে ট্যাপ করুন</string>
+    <string name="deadline_pick_label">ডেডলাইনের তারিখ ও সময় বাছুন</string>
+    <string name="deadline_time_title">ডেডলাইনের সময়</string>
+    <string name="error_task_title_required">সংরক্ষণের আগে কাজের নাম লিখুন।</string>
+    <string name="error_task_deadline_format">ডেডলাইন YYYY-MM-DD HH:MM আকারে লিখুন।</string>
+
+    <!-- Habits -->
+    <string name="habits_eyebrow">প্রতিজ্ঞা নয়, অভ্যাস</string>
+    <string name="habits_title">আপনার অভ্যাস</string>
+    <string name="habits_add">+  নতুন অভ্যাস</string>
+    <string name="habits_empty">আপনার সপ্তাহের সাথে মানানসই একটা রুটিন বানান।</string>
+    <string name="habit_done_today">আজ সম্পন্ন</string>
+    <string name="habit_mark_done">সম্পন্ন করুন</string>
+    <string name="cd_completed_habit">আজ সম্পন্ন: %1$s</string>
+    <string name="cd_complete_habit">অভ্যাস সম্পন্ন করুন: %1$s</string>
+    <string name="cd_edit_habit">অভ্যাস সম্পাদনা: %1$s</string>
+    <string name="schedule_daily">প্রতিদিন</string>
+    <string name="schedule_weekends">সাপ্তাহিক ছুটির দিন</string>
+    <string name="schedule_weekdays">কর্মদিবস</string>
+    <string name="schedule_every_day">প্রতিদিন</string>
+    <string name="schedule_every_n_days">প্রতি %1$d দিন পরপর</string>
+    <string name="schedule_selected_days">নির্দিষ্ট দিন</string>
+    <string name="schedule_every_x_days">কয়েক দিন পরপর</string>
+    <string name="habit_editor_eyebrow">নিজের মতো করে</string>
+    <string name="habit_editor_title_new">নতুন অভ্যাস</string>
+    <string name="habit_editor_title_edit">অভ্যাস সম্পাদনা</string>
+    <string name="habit_field_title">কোন কাজটা নিয়মিত করতে চান?</string>
+    <string name="habit_rhythm">কতদিন পরপর</string>
+    <string name="habit_daily_hint">প্রতিদিন একটা ছোট জয়।</string>
+    <string name="habit_days_hint">আপনার সপ্তাহের সাথে মেলে এমন দিন বাছুন।</string>
+    <string name="habit_repeat_every">পুনরাবৃত্তি প্রতি</string>
+    <string name="habit_days_suffix">দিন</string>
+    <string name="habit_starting">শুরু %1$s</string>
+    <string name="habit_save">অভ্যাস সংরক্ষণ করুন</string>
+    <string name="habit_delete">অভ্যাস মুছে ফেলুন</string>
+    <string name="habit_delete_title">অভ্যাসটা মুছে ফেলবেন?</string>
+    <string name="habit_delete_text">\"%1$s\" আর এর streak-এর সব ইতিহাস মুছে যাবে।</string>
+    <string name="error_habit_name_required">সংরক্ষণের আগে একটা নাম লিখুন।</string>
+    <string name="error_habit_days_required">অন্তত একটা দিন বাছুন।</string>
+    <string name="error_habit_interval">অন্তত ১ দিনের ব্যবধান লিখুন।</string>
+
+    <!-- Profile -->
+    <string name="profile_eyebrow">আপনার গতি</string>
+    <string name="profile_title">আপনার অগ্রগতি</string>
+    <string name="profile_best_streak">সেরা streak</string>
+    <string name="profile_days">%1$d দিন</string>
+    <string name="profile_best_hint">সবচেয়ে লম্বা ধারাটা আপনারই থাকবে, নতুন করে শুরু করলেও।</string>
+    <string name="profile_current_rhythm">এখনকার ধারা</string>
+    <string name="profile_active_days">অভ্যাসে মোট %1$d দিন চলছে</string>
+    <string name="profile_habit_count">মোট %1$dটি অভ্যাস</string>
+
+    <!-- Settings -->
+    <string name="settings_eyebrow">দিনটা নিজের মতো সাজান</string>
+    <string name="settings_title">সেটিংস</string>
+    <string name="settings_back">প্রোফাইলে ফিরুন</string>
+    <string name="settings_summary">সকালের সারাংশ</string>
+    <string name="settings_summary_detail">দিনে একবার আপনার জরুরি কাজগুলোর এক নজর।</string>
+    <string name="settings_summary_time">স্থানীয় সময় (২৪ ঘণ্টা)</string>
+    <string name="settings_summary_time_example">যেমন: 08:00</string>
+    <string name="settings_summary_save">সারাংশের সময় সংরক্ষণ করুন</string>
+    <string name="summary_status_exact">সারাংশ ঠিক সময়ে আসার ব্যবস্থা হয়েছে।</string>
+    <string name="summary_status_fallback">Android সারাংশ দেরিতে দিতে পারে। ঠিক সময়ে পেতে exact alarm-এর অনুমতি দিন।</string>
+    <string name="summary_status_disabled">দৈনিক সারাংশ বন্ধ আছে।</string>
+    <string name="summary_status_notifications">দৈনিক সারাংশ আর ডেডলাইনের রিমাইন্ডার পেতে নোটিফিকেশনের অনুমতি দিন।</string>
+    <string name="summary_status_default">এই সময়ের এক ঘণ্টা আগে Smart Wake চালু হয়; না হলে নোটিফিকেশন আসবে।</string>
+    <string name="settings_calendar">ক্যালেন্ডার থেকে আনা (ঐচ্ছিক)</string>
+    <string name="settings_calendar_detail">শুধু পড়া হবে। ক্যালেন্ডারের অনুমতি ছাড়াও নিজের লেখা কাজ ব্যবহার করতে পারবেন।</string>
+    <string name="settings_calendar_unavailable">ক্যালেন্ডারের অনুমতি নেই। ইভেন্ট দেখাতে অনুমতি দিন; আপনার নিজের কাজগুলো যেমন আছে তেমনই থাকবে।</string>
+    <string name="settings_calendar_manage">ক্যালেন্ডারের অনুমতি</string>
+    <string name="settings_notifications">নোটিফিকেশন সেটিংস</string>
+    <string name="settings_exact_alarms">Exact alarm-এর অনুমতি</string>
+    <string name="settings_dnd">Do Not Disturb-এর অনুমতি</string>
+    <string name="settings_system_note">নোটিফিকেশন দেখানো, exact alarm আর Do Not Disturb Android নিয়ন্ত্রণ করে। Exact alarm না থাকলে Dayline একটু দেরিতে রিমাইন্ডার দেয়।</string>
+    <string name="error_summary_check">সারাংশের সময়সূচি যাচাই করা যায়নি: %1$s</string>
+    <string name="error_summary_save">সারাংশের সেটিংস সংরক্ষণ করা যায়নি: %1$s</string>
+    <string name="error_summary_time">২৪ ঘণ্টার হিসেবে সঠিক সময় লিখুন, যেমন 08:00।</string>
+    <string name="error_calendar_update">ক্যালেন্ডারের সেটিংস বদলানো যায়নি: %1$s</string>
+    <string name="error_calendar_denied">ক্যালেন্ডারের অনুমতি দেওয়া হয়নি। অনুমতি ছাড়াও নিজের লেখা কাজ ব্যবহার করতে পারবেন।</string>
+
+    <!-- Alarm reliability -->
+    <string name="alarm_reliability_title">অ্যালার্ম ঠিকঠাক বাজার জন্য</string>
+    <string name="alarm_reliability_detail">ডেডলাইনে অ্যালার্ম ঘড়ির মতো বাজবে আর পুরো স্ক্রিন জুড়ে একটা পাতা খুলবে, ফোন লক থাকলেও।</string>
+    <string name="alarm_full_screen_off">পুরো স্ক্রিনের অ্যালার্ম বন্ধ আছে, তাই ডেডলাইনে শুধু নোটিফিকেশন আসবে।</string>
+    <string name="alarm_full_screen_allow">পুরো স্ক্রিনের অ্যালার্ম চালু করুন</string>
+    <string name="alarm_xiaomi_tip">Xiaomi, Redmi আর POCO ফোনে \"Show on Lock screen\" আর \"Display pop-up windows while running in the background\" চালু করুন, আর Autostart-এর অনুমতি দিন। নাহলে MIUI অ্যালার্মের পাতা আটকে দিতে বা রিমাইন্ডার বাতিল করে দিতে পারে।</string>
+    <string name="alarm_xiaomi_permissions">Xiaomi-র অনুমতি খুলুন</string>
+    <string name="alarm_xiaomi_autostart">Autostart খুলুন</string>
+    <string name="alarm_deadline_was">ডেডলাইন ছিল %1$s</string>
+
+    <!-- Backup -->
+    <string name="backup_title">ব্যাকআপ</string>
+    <string name="backup_detail">আপনার কাজ, অভ্যাস, streak আর সেটিংস একটা ফাইলে রেখে দিন, অথবা নতুন ফোনে ফিরিয়ে আনুন।</string>
+    <string name="backup_export">ব্যাকআপ ফাইল বানান</string>
+    <string name="backup_restore">ব্যাকআপ থেকে ফিরিয়ে আনুন</string>
+    <string name="backup_restore_title">ব্যাকআপ থেকে ফিরিয়ে আনবেন?</string>
+    <string name="backup_restore_text">Dayline-এ এখন যা আছে সব মুছে ব্যাকআপের তথ্য বসবে। এটা আর ফেরানো যাবে না।</string>
+    <string name="backup_choose_file">ফাইল বাছুন</string>
+    <string name="backup_saved">ব্যাকআপ সংরক্ষণ হয়েছে।</string>
+    <string name="backup_restored">ব্যাকআপ থেকে সব ফিরে এসেছে।</string>
+    <string name="error_backup_save">ব্যাকআপ সংরক্ষণ করা যায়নি: %1$s</string>
+    <string name="error_backup_restore">ব্যাকআপ ফিরিয়ে আনা যায়নি: %1$s</string>
+    <string name="error_backup_not_dayline">এটা Dayline-এর ব্যাকআপ ফাইল নয়।</string>
+    <string name="error_backup_newer">এই ব্যাকআপ Dayline-এর নতুন সংস্করণে বানানো। আগে অ্যাপ আপডেট করুন।</string>
+    <string name="error_backup_damaged">ব্যাকআপ ফাইলটা নষ্ট বা অসম্পূর্ণ।</string>
+
+    <!-- Notifications -->
+    <string name="channel_reminders">কাজের রিমাইন্ডার</string>
+    <string name="channel_urgent">জরুরি কাজের রিমাইন্ডার</string>
+    <string name="channel_urgent_dnd">Do Not Disturb-এর সময়েও জরুরি রিমাইন্ডার</string>
+    <string name="channel_overdue">সময় পেরোনো কাজ</string>
+    <string name="channel_summary">দৈনিক সারাংশ</string>
+    <string name="channel_alarm">ডেডলাইনের অ্যালার্ম</string>
+    <string name="notif_two_hours">আর দুই ঘণ্টা বাকি</string>
+    <string name="notif_approaching">ডেডলাইন ঘনিয়ে আসছে</string>
+    <string name="notif_snoozed">স্নুজ করা রিমাইন্ডার</string>
+    <string name="notif_passed">ডেডলাইন পেরিয়ে গেছে</string>
+    <string name="notif_overdue">সময় পেরোনো কাজ</string>
+    <string name="notif_deadline_now">এখনই ডেডলাইন</string>
+    <string name="notif_summary_title">Dayline · আজ</string>
+    <string name="notif_summary_text">%2$s-এ %1$dটি জরুরি কাজ</string>
+    <string name="notif_summary_empty">আজ আপনার তালিকায় জরুরি কিছু নেই।</string>
+    <string name="notif_view_all">সব দেখুন</string>
+</resources>

@@ -26,6 +26,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dayline.R
+import androidx.compose.ui.res.stringResource
 import com.dayline.domain.model.Task
 import com.dayline.domain.model.TaskStatus
 import com.dayline.domain.reminders.ReminderScheduleStatus
@@ -52,13 +54,13 @@ fun TasksScreen(
     ) {
         item {
             Text(
-                text = "TASK DECK",
+                text = stringResource(R.string.tasks_eyebrow),
                 color = Color(0xFFB7FF4A),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Your tasks",
+                text = stringResource(R.string.tasks_title),
                 modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
                 color = Color(0xFFF4F5FF),
                 fontSize = 30.sp,
@@ -73,12 +75,12 @@ fun TasksScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("task-search"),
-                    placeholder = { Text("Search tasks") },
+                    placeholder = { Text(stringResource(R.string.tasks_search)) },
                     leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
                     trailingIcon = if (query.isNotEmpty()) {
                         {
                             IconButton(onClick = { query = "" }) {
-                                Icon(Icons.Rounded.Clear, contentDescription = "Clear search")
+                                Icon(Icons.Rounded.Clear, contentDescription = stringResource(R.string.cd_clear_search))
                             }
                         }
                     } else {
@@ -91,7 +93,7 @@ fun TasksScreen(
         }
         item {
             Text(
-                text = "Open tasks",
+                text = stringResource(R.string.tasks_open),
                 color = Color(0xFFC2C7D3),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
@@ -102,9 +104,9 @@ fun TasksScreen(
             item {
                 Text(
                     text = if (query.isBlank()) {
-                        "Nothing waiting in your task deck."
+                        stringResource(R.string.tasks_empty)
                     } else {
-                        "No open tasks match \"${query.trim()}\"."
+                        stringResource(R.string.tasks_no_match, query.trim())
                     },
                     color = Color(0xFFC2C7D3),
                     modifier = Modifier.padding(vertical = 16.dp)
@@ -122,7 +124,7 @@ fun TasksScreen(
         if (completedTasks.isNotEmpty()) {
             item {
                 Text(
-                    text = "Completed tasks",
+                    text = stringResource(R.string.tasks_completed),
                     modifier = Modifier.padding(top = 12.dp),
                     color = Color(0xFF59F5D8),
                     fontSize = 15.sp,

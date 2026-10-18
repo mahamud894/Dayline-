@@ -3,6 +3,9 @@ package com.dayline.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.annotation.StringRes
+import com.dayline.R
+import com.dayline.ui.common.UiText
 import com.dayline.data.backup.BackupFormatException
 import com.dayline.data.backup.DaylineBackup
 import com.dayline.data.local.UserSettingsStore
@@ -41,11 +44,11 @@ class SettingsViewModel(
     val scheduleStatus: StateFlow<MorningSummaryScheduleStatus?> =
         mutableScheduleStatus.asStateFlow()
 
-    private val mutableError = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = mutableError.asStateFlow()
+    private val mutableError = MutableStateFlow<UiText?>(null)
+    val error: StateFlow<UiText?> = mutableError.asStateFlow()
 
-    private val mutableBackupMessage = MutableStateFlow<String?>(null)
-    val backupMessage: StateFlow<String?> = mutableBackupMessage.asStateFlow()
+    private val mutableBackupMessage = MutableStateFlow<UiText?>(null)
+    val backupMessage: StateFlow<UiText?> = mutableBackupMessage.asStateFlow()
 
     private val updateMutex = Mutex()
 
@@ -65,7 +68,7 @@ class SettingsViewModel(
                         summaryScheduler.schedule(settingsStore.settings.first())
                 } catch (exception: Exception) {
                     mutableError.value =
-                        "Unable to check summary schedule: ${exception.message ?: "unknown error"}"
+                        UiText(R.string.error_summary_check, exception.message.orEmpty())
                 }
             }
         }
@@ -81,7 +84,7 @@ class SettingsViewModel(
                     settingsStore.save(updated)
                 } catch (exception: Exception) {
                     mutableError.value =
-                        "Unable to update calendar settings: ${exception.message ?: "unknown error"}"
+                        UiText(R.string.error_calendar_update, exception.message.orEmpty())
                 }
             }
         }
@@ -89,14 +92,14 @@ class SettingsViewModel(
 
     fun reportCalendarPermissionDenied() {
         mutableError.value =
-            "Calendar access wasn't granted. Manual tasks remain available without calendar access."
+            UiText(R.string.error_calendar_denied)
     }
 
     fun saveSummaryTime(value: String) {
         val time = try {
             LocalTime.parse(value.trim())
         } catch (_: DateTimeParseException) {
-            mutableError.value = "Enter a valid 24-hour time, such as 08:00."
+            mutableError.value = UiText(R.string.error_summary_time)
             return
         }
         updateSettings { it.copy(morningSummaryTime = time) }
@@ -108,13 +111,13 @@ class SettingsViewModel(
 
     /** [write] stores the JSON wherever the user chose; it runs off the main thread. */
     fun exportBackup(write: suspend (String) -> Unit) {
-        runBackupJob("Backup saved.", "Couldn't save the backup") {
+        runBackupJob(R.string.backup_saved, R.string.error_backup_save) {
             write(backup.export())
         }
     }
 
     fun restoreBackup(read: suspend () -> String) {
-        runBackupJob("Backup restored.", "Couldn't restore the backup") {
+        runBackupJob(R.string.backup_restored, R.string.error_backup_restore) {
             backup.restore(read())
         }
     }
@@ -123,18 +126,18 @@ class SettingsViewModel(
         mutableBackupMessage.value = null
     }
 
-    private fun runBackupJob(success: String, failure: String, job: suspend () -> Unit) {
+    private fun runBackupJob(@StringRes success: Int, @StringRes failure: Int, job: suspend () -> Unit) {
         mutableBackupMessage.value = null
         viewModelScope.launch {
             mutableBackupMessage.value = try {
                 withContext(Dispatchers.IO) { job() }
-                success
+                UiText(success)
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: BackupFormatException) {
-                exception.message
+                UiText(exception.reason)
             } catch (exception: Exception) {
-                "$failure: ${exception.message ?: "unknown error"}"
+                UiText(failure, exception.message.orEmpty())
             }
         }
     }
@@ -150,7 +153,7 @@ class SettingsViewModel(
                     if (!updated.morningSummaryEnabled) notifications.clearSummary()
                 } catch (exception: Exception) {
                     mutableError.value =
-                        "Unable to save summary settings: ${exception.message ?: "unknown error"}"
+                        UiText(R.string.error_summary_save, exception.message.orEmpty())
                 }
             }
         }

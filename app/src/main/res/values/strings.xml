@@ -1,3 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Dayline</string>
+    <string name="app_name" translatable="false">Dayline</string>
+
+    <!-- Date and time patterns (java.time). Translators may reorder fields; keep quoted words quoted. -->
+    <string name="pattern_long_date">EEEE, MMMM d</string>
+    <string name="pattern_short_date">MMM d</string>
+    <string name="pattern_time">h:mm a</string>
+    <string name="pattern_task_due">EEE, MMM d \'at\' h:mm a</string>
+    <string name="pattern_deadline_date">EEE, MMM d</string>
+
+    <!-- Shared actions and labels -->
+    <string name="action_back">Back</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_done">Done</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_next">Next</string>
+    <string name="action_ok">OK</string>
+    <string name="action_snooze">Snooze</string>
+    <string name="label_completed">Completed</string>
+    <string name="label_deadline">DEADLINE</string>
+    <string name="label_due_today">DUE TODAY</string>
+    <string name="label_habit">HABIT</string>
+    <string name="label_high">HIGH</string>
+    <string name="label_high_priority">HIGH PRIORITY</string>
+    <string name="label_overdue">OVERDUE</string>
+    <string name="priority_normal">Normal</string>
+    <string name="priority_high">High</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">Today</string>
+    <string name="nav_tasks">Tasks</string>
+    <string name="nav_habits">Habits</string>
+    <string name="nav_profile">Profile</string>
+    <string name="cd_add_task">Add task</string>
+
+    <!-- Today -->
+    <string name="today_eyebrow">DAYLINE / TODAY</string>
+    <string name="today_title">Make today count</string>
+    <string name="today_in_focus">TODAY IN FOCUS</string>
+    <string name="today_progress_none">Start with one thing</string>
+    <string name="today_progress">%1$d of %2$d done</string>
+    <string name="today_progress_hint">Small steps keep the day moving.</string>
+    <string name="today_progress_description">Progress: %1$d of %2$d deadlines complete</string>
+    <string name="today_next_commitment">Next commitment</string>
+    <string name="today_next_calendar">Next calendar event</string>
+    <string name="today_next_none_title">Nothing on the radar</string>
+    <string name="today_next_none_detail">Your day is open. Keep it that way or add a task.</string>
+    <string name="today_calendar_section">Calendar commitments</string>
+    <string name="today_calendar_empty">No calendar commitments today.</string>
+    <string name="today_calendar_event">CALENDAR EVENT</string>
+    <string name="today_count_today">%1$d TODAY</string>
+    <string name="today_count_scheduled">%1$d SCHEDULED</string>
+    <string name="today_focus_section">Focus queue</string>
+    <string name="today_focus_detail">TOP PRIORITIES</string>
+    <string name="today_focus_empty">A little breathing room. Add something when you\'re ready.</string>
+    <string name="today_deadlines_section">Hard Deadlines</string>
+    <string name="today_deadlines_empty">No fixed-time deadlines on your calendar today.</string>
+    <string name="today_habits_section">Daily Habits</string>
+    <string name="today_habits_empty">Your routines will appear here on their scheduled days.</string>
+    <string name="today_streak">%1$d day streak</string>
+    <string name="calendar_permission_unavailable">Calendar access is unavailable. Allow calendar access in Settings to import events.</string>
+    <string name="calendar_provider_unavailable">Calendar data is currently unavailable.</string>
+    <string name="calendar_load_failed">Calendar commitments couldn\'t be loaded: %1$s</string>
+
+    <!-- Tasks -->
+    <string name="tasks_eyebrow">TASK DECK</string>
+    <string name="tasks_title">Your tasks</string>
+    <string name="tasks_search">Search tasks</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="tasks_open">Open tasks</string>
+    <string name="tasks_empty">Nothing waiting in your task deck.</string>
+    <string name="tasks_no_match">No open tasks match \"%1$s\".</string>
+    <string name="tasks_completed">Completed tasks</string>
+    <string name="task_no_deadline">No deadline</string>
+    <string name="cd_edit_task">Edit task: %1$s</string>
+    <string name="cd_complete_task">Complete task: %1$s</string>
+    <string name="cd_delete_task">Delete task: %1$s</string>
+    <string name="notice_exact_alarm">Android may delay deadline reminders. Allow exact alarms for on-time delivery.</string>
+    <string name="notice_notifications">Allow notifications to receive deadline reminders.</string>
+
+    <!-- Task editor -->
+    <string name="task_editor_eyebrow_new">QUICK CAPTURE</string>
+    <string name="task_editor_eyebrow_edit">REFINE TASK</string>
+    <string name="task_editor_title_new">New task</string>
+    <string name="task_editor_title_edit">Edit task</string>
+    <string name="task_field_title">What needs doing?</string>
+    <string name="task_field_notes">Notes (optional)</string>
+    <string name="task_priority">PRIORITY</string>
+    <string name="task_urgent_alerts">Urgent alerts</string>
+    <string name="task_urgent_alerts_detail">Allow this task to break quiet settings</string>
+    <string name="task_save">Save task</string>
+    <string name="task_delete">Delete task</string>
+    <string name="task_delete_title">Delete this task?</string>
+    <string name="task_delete_text">\"%1$s\" and its reminders will be removed.</string>
+    <string name="task_delete_completed_text">\"%1$s\" will be removed.</string>
+    <string name="deadline_field">Deadline (optional)</string>
+    <string name="deadline_placeholder">Tap to pick a date and time</string>
+    <string name="deadline_pick_label">Pick deadline date and time</string>
+    <string name="deadline_time_title">Deadline time</string>
+    <string name="error_task_title_required">Add a title before saving.</string>
+    <string name="error_task_deadline_format">Use YYYY-MM-DD HH:MM for the local deadline.</string>
+
+    <!-- Habits -->
+    <string name="habits_eyebrow">RITUALS, NOT RESOLUTIONS</string>
+    <string name="habits_title">Your habits</string>
+    <string name="habits_add">+  Add a habit</string>
+    <string name="habits_empty">Build a routine that fits your real week.</string>
+    <string name="habit_done_today">Done today</string>
+    <string name="habit_mark_done">Mark done</string>
+    <string name="cd_completed_habit">Completed today: %1$s</string>
+    <string name="cd_complete_habit">Complete habit: %1$s</string>
+    <string name="cd_edit_habit">Edit habit: %1$s</string>
+    <string name="schedule_daily">Daily</string>
+    <string name="schedule_weekends">Weekends</string>
+    <string name="schedule_weekdays">Weekdays</string>
+    <string name="schedule_every_day">Every day</string>
+    <string name="schedule_every_n_days">Every %1$d days</string>
+    <string name="schedule_selected_days">Selected days</string>
+    <string name="schedule_every_x_days">Every X days</string>
+    <string name="habit_editor_eyebrow">FLEXIBLE BY DESIGN</string>
+    <string name="habit_editor_title_new">New habit</string>
+    <string name="habit_editor_title_edit">Edit habit</string>
+    <string name="habit_field_title">What do you want to repeat?</string>
+    <string name="habit_rhythm">RHYTHM</string>
+    <string name="habit_daily_hint">A small win, every day.</string>
+    <string name="habit_days_hint">Choose the days that fit your week.</string>
+    <string name="habit_repeat_every">Repeat every</string>
+    <string name="habit_days_suffix">days</string>
+    <string name="habit_starting">Starting %1$s</string>
+    <string name="habit_save">Save habit</string>
+    <string name="habit_delete">Delete habit</string>
+    <string name="habit_delete_title">Delete this habit?</string>
+    <string name="habit_delete_text">\"%1$s\" and its streak history will be removed.</string>
+    <string name="error_habit_name_required">Add a name before saving.</string>
+    <string name="error_habit_days_required">Choose at least one day.</string>
+    <string name="error_habit_interval">Enter an interval of at least one day.</string>
+
+    <!-- Profile -->
+    <string name="profile_eyebrow">YOUR MOMENTUM</string>
+    <string name="profile_title">Your progress</string>
+    <string name="profile_best_streak">BEST STREAK</string>
+    <string name="profile_days">%1$d days</string>
+    <string name="profile_best_hint">Your longest run stays yours, even after a reset.</string>
+    <string name="profile_current_rhythm">CURRENT RHYTHM</string>
+    <string name="profile_active_days">%1$d active habit days</string>
+    <string name="profile_habit_count">%1$d habits in your orbit</string>
+
+    <!-- Settings -->
+    <string name="settings_eyebrow">TUNE YOUR DAY</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_back">Back to profile</string>
+    <string name="settings_summary">Morning summary</string>
+    <string name="settings_summary_detail">One daily glance at your top commitments.</string>
+    <string name="settings_summary_time">Local time (24-hour)</string>
+    <string name="settings_summary_time_example">Example: 08:00</string>
+    <string name="settings_summary_save">Save summary time</string>
+    <string name="summary_status_exact">Exact summary alarm scheduled.</string>
+    <string name="summary_status_fallback">Android may delay summaries. Allow exact alarms for on-time delivery.</string>
+    <string name="summary_status_disabled">Daily summary is turned off.</string>
+    <string name="summary_status_notifications">Allow notifications to receive your daily summary and deadline reminders.</string>
+    <string name="summary_status_default">Smart Wake starts one hour before this time; the notification is the fallback.</string>
+    <string name="settings_calendar">Optional calendar import</string>
+    <string name="settings_calendar_detail">Read-only. Manual tasks remain available without calendar access.</string>
+    <string name="settings_calendar_unavailable">Calendar access is unavailable. Grant permission to show events; your manual tasks are unchanged.</string>
+    <string name="settings_calendar_manage">Manage calendar access</string>
+    <string name="settings_notifications">Notification settings</string>
+    <string name="settings_exact_alarms">Manage exact alarm access</string>
+    <string name="settings_dnd">Do Not Disturb access</string>
+    <string name="settings_system_note">Android controls notification visibility, exact-alarm access, and Do Not Disturb overrides. Dayline uses a delayed WorkManager fallback when exact alarms are unavailable.</string>
+    <string name="error_summary_check">Unable to check summary schedule: %1$s</string>
+    <string name="error_summary_save">Unable to save summary settings: %1$s</string>
+    <string name="error_summary_time">Enter a valid 24-hour time, such as 08:00.</string>
+    <string name="error_calendar_update">Unable to update calendar settings: %1$s</string>
+    <string name="error_calendar_denied">Calendar access wasn\'t granted. Manual tasks remain available without calendar access.</string>
+
+    <!-- Alarm reliability -->
+    <string name="alarm_reliability_title">Alarm reliability</string>
+    <string name="alarm_reliability_detail">Deadlines ring like an alarm clock and open a full-screen page, even on the lock screen.</string>
+    <string name="alarm_full_screen_off">Full-screen alarms are turned off, so deadlines only show a notification.</string>
+    <string name="alarm_full_screen_allow">Allow full-screen alarms</string>
+    <string name="alarm_xiaomi_tip">On Xiaomi, Redmi and POCO phones, turn on \"Show on Lock screen\" and \"Display pop-up windows while running in the background\", and allow Autostart. Otherwise MIUI can block the alarm page or cancel reminders.</string>
+    <string name="alarm_xiaomi_permissions">Open Xiaomi permissions</string>
+    <string name="alarm_xiaomi_autostart">Open Autostart</string>
+    <string name="alarm_deadline_was">Deadline was %1$s</string>
+
+    <!-- Backup -->
+    <string name="backup_title">Backup</string>
+    <string name="backup_detail">Save your tasks, habits, streaks and settings to a file you keep, or restore them on a new phone.</string>
+    <string name="backup_export">Export backup</string>
+    <string name="backup_restore">Restore from backup</string>
+    <string name="backup_restore_title">Restore from backup?</string>
+    <string name="backup_restore_text">Everything currently in Dayline will be replaced by the backup. This can\'t be undone.</string>
+    <string name="backup_choose_file">Choose file</string>
+    <string name="backup_saved">Backup saved.</string>
+    <string name="backup_restored">Backup restored.</string>
+    <string name="error_backup_save">Couldn\'t save the backup: %1$s</string>
+    <string name="error_backup_restore">Couldn\'t restore the backup: %1$s</string>
+    <string name="error_backup_not_dayline">This file isn\'t a Dayline backup.</string>
+    <string name="error_backup_newer">This backup was made by a newer version of Dayline. Update the app first.</string>
+    <string name="error_backup_damaged">This backup file is damaged or incomplete.</string>
+
+    <!-- Notifications -->
+    <string name="channel_reminders">Task reminders</string>
+    <string name="channel_urgent">Urgent task reminders</string>
+    <string name="channel_urgent_dnd">Urgent reminders allowed during Do Not Disturb</string>
+    <string name="channel_overdue">Overdue tasks</string>
+    <string name="channel_summary">Daily summaries</string>
+    <string name="channel_alarm">Deadline alarms</string>
+    <string name="notif_two_hours">Coming up in two hours</string>
+    <string name="notif_approaching">Deadline approaching</string>
+    <string name="notif_snoozed">Snoozed reminder</string>
+    <string name="notif_passed">Deadline passed</string>
+    <string name="notif_overdue">Overdue task</string>
+    <string name="notif_deadline_now">Deadline now</string>
+    <string name="notif_summary_title">Dayline · Today</string>
+    <string name="notif_summary_text">%1$d priorities for %2$s</string>
+    <string name="notif_summary_empty">No urgent commitments on your list today.</string>
+    <string name="notif_view_all">View all</string>
 </resources>

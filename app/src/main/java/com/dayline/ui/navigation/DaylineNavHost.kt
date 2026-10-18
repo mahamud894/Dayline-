@@ -52,7 +52,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
 import com.dayline.AppContainer
+import com.dayline.R
+import com.dayline.ui.common.UiText
+import com.dayline.platform.calendar.AndroidCalendarReader
 import com.dayline.platform.calendar.CalendarAccessUnavailableException
 import com.dayline.platform.calendar.CalendarCommitment
 import com.dayline.domain.model.Task
@@ -70,17 +75,18 @@ import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.CancellationException
 
-private enum class Destination(val label: String) {
-    TODAY("Today"),
-    TASKS("Tasks"),
-    HABITS("Habits"),
-    PROFILE("Profile"),
-    SETTINGS("Settings")
+/** [label] is a stable English id for test tags; [title] is what users see. */
+private enum class Destination(val label: String, @StringRes val title: Int) {
+    TODAY("Today", R.string.nav_today),
+    TASKS("Tasks", R.string.nav_tasks),
+    HABITS("Habits", R.string.nav_habits),
+    PROFILE("Profile", R.string.nav_profile),
+    SETTINGS("Settings", R.string.settings_title)
 }
 
 private data class CalendarCommitmentsState(
     val commitments: List<CalendarCommitment> = emptyList(),
-    val unavailableMessage: String? = null
+    val unavailableMessage: UiText? = null
 )
 
 @Composable
@@ -155,6 +161,7 @@ fun DaylineNavHost(container: AppContainer) {
         }
     }
     val backupMessage by settingsViewModel.backupMessage.collectAsState()
+    val addTaskDescription = stringResource(R.string.cd_add_task)
     val tasks by taskViewModel.tasks.collectAsState()
     val habits by habitViewModel.habits.collectAsState()
     val today by habitViewModel.today.collectAsState()
@@ -201,13 +208,21 @@ fun DaylineNavHost(container: AppContainer) {
                     commitments = container.calendarReader.readBetween(start, end)
                 )
             } catch (exception: CalendarAccessUnavailableException) {
-                value = CalendarCommitmentsState(unavailableMessage = exception.message)
+                value = CalendarCommitmentsState(
+                    unavailableMessage = UiText(
+                        if (exception.message == AndroidCalendarReader.PERMISSION_UNAVAILABLE) {
+                            R.string.calendar_permission_unavailable
+                        } else {
+                            R.string.calendar_provider_unavailable
+                        }
+                    )
+                )
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
                 value = CalendarCommitmentsState(
                     unavailableMessage =
-                        "Calendar commitments couldn't be loaded: ${exception.message ?: "unknown error"}"
+                        UiText(R.string.calendar_load_failed, exception.message.orEmpty())
                 )
             }
         }
@@ -318,7 +333,7 @@ fun DaylineNavHost(container: AppContainer) {
                                 unselectedIconColor = Color(0xFFC2C7D3),
                                 unselectedTextColor = Color(0xFFC2C7D3)
                             ),
-                            label = { Text(destination.label) }
+                            label = { Text(stringResource(destination.title)) }
                         )
                     }
                 }
@@ -333,7 +348,7 @@ fun DaylineNavHost(container: AppContainer) {
                         },
                         modifier = Modifier
                             .testTag("add-task-fab")
-                            .semantics { contentDescription = "Add task" },
+                            .semantics { contentDescription = addTaskDescription },
                         shape = CircleShape,
                         containerColor = Color(0xFFB7FF4A),
                         contentColor = Color(0xFF10150B)
@@ -351,7 +366,7 @@ fun DaylineNavHost(container: AppContainer) {
                     completedHabitIds = completedHabitIds,
                     calendarCommitments = calendarState.commitments,
                     calendarImportEnabled = userSettings.calendarImportEnabled,
-                    calendarUnavailableMessage = calendarState.unavailableMessage,
+                    calendarUnavailableMessage = calendarState.unavailableMessage?.resolve(),
                     reminderScheduleStatus = reminderScheduleStatus,
                     onCompleteHabit = { habitViewModel.completeHabit(it.id) },
                     modifier = Modifier.padding(contentPadding)

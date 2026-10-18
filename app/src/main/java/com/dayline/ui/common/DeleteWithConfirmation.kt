@@ -12,6 +12,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import com.dayline.R
 
 /** A "Delete" text button that asks before calling [onConfirm]. */
 @Composable
@@ -41,10 +43,10 @@ fun DeleteWithConfirmation(
                         onConfirm()
                     },
                     modifier = Modifier.testTag("delete-confirm")
-                ) { Text("Delete", color = DangerColor) }
+                ) { Text(stringResource(R.string.action_delete), color = DangerColor) }
             },
             dismissButton = {
-                TextButton(onClick = { confirming = false }) { Text("Cancel") }
+                TextButton(onClick = { confirming = false }) { Text(stringResource(R.string.action_cancel)) }
             }
         )
     }

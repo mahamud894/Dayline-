@@ -36,6 +36,9 @@ import androidx.compose.ui.unit.sp
 import com.dayline.domain.model.Habit
 import com.dayline.domain.model.HabitSchedule
 import com.dayline.ui.common.DeleteWithConfirmation
+import com.dayline.ui.common.UiText
+import com.dayline.R
+import androidx.compose.ui.res.stringResource
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -45,7 +48,7 @@ import java.util.Locale
 @Composable
 fun HabitEditorScreen(
     habit: Habit?,
-    saveError: String?,
+    saveError: UiText?,
     today: LocalDate,
     onBack: () -> Unit,
     onClearError: () -> Unit,
@@ -70,7 +73,7 @@ fun HabitEditorScreen(
             (habit?.schedule as? HabitSchedule.EveryDays)?.interval?.toString() ?: "2"
         )
     }
-    var localError by rememberSaveable(habit?.id) { mutableStateOf<String?>(null) }
+    var localError by rememberSaveable(habit?.id) { mutableStateOf<Int?>(null) }
 
     Column(
         modifier = Modifier
@@ -81,17 +84,17 @@ fun HabitEditorScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         TextButton(onClick = onBack) {
-            Text("Back", color = Color(0xFFC7A2FF))
+            Text(stringResource(R.string.action_back), color = Color(0xFFC7A2FF))
         }
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text = "FLEXIBLE BY DESIGN",
+                text = stringResource(R.string.habit_editor_eyebrow),
                 color = Color(0xFF59F5D8),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = if (habit == null) "New habit" else "Edit habit",
+                text = stringResource(if (habit == null) R.string.habit_editor_title_new else R.string.habit_editor_title_edit),
                 color = Color(0xFFF4F5FF),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
@@ -107,13 +110,13 @@ fun HabitEditorScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("habit-title"),
-            label = { Text("What do you want to repeat?") },
+            label = { Text(stringResource(R.string.habit_field_title)) },
             singleLine = true,
             shape = RoundedCornerShape(18.dp)
         )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text = "RHYTHM",
+                text = stringResource(R.string.habit_rhythm),
                 color = Color(0xFFC2C7D3),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
@@ -125,7 +128,7 @@ fun HabitEditorScreen(
                         scheduleType = ScheduleType.DAILY
                         localError = null
                     },
-                    label = { Text("Daily") },
+                    label = { Text(stringResource(R.string.schedule_daily)) },
                     modifier = Modifier.testTag("schedule-daily")
                 )
                 FilterChip(
@@ -134,7 +137,7 @@ fun HabitEditorScreen(
                         scheduleType = ScheduleType.SELECTED_DAYS
                         localError = null
                     },
-                    label = { Text("Selected days") },
+                    label = { Text(stringResource(R.string.schedule_selected_days)) },
                     modifier = Modifier.testTag("schedule-selected-days")
                 )
             }
@@ -144,19 +147,19 @@ fun HabitEditorScreen(
                     scheduleType = ScheduleType.EVERY_X_DAYS
                     localError = null
                 },
-                label = { Text("Every X days") },
+                label = { Text(stringResource(R.string.schedule_every_x_days)) },
                 modifier = Modifier.testTag("schedule-every-x-days")
             )
         }
         when (scheduleType) {
             ScheduleType.DAILY -> Text(
-                "A small win, every day.",
+                stringResource(R.string.habit_daily_hint),
                 color = Color(0xFFA7DCD2),
                 fontSize = 13.sp
             )
             ScheduleType.SELECTED_DAYS -> {
                 Text(
-                    "Choose the days that fit your week.",
+                    stringResource(R.string.habit_days_hint),
                     color = Color(0xFFA7DCD2),
                     fontSize = 13.sp
                 )
@@ -195,20 +198,20 @@ fun HabitEditorScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("habit-interval"),
-                    label = { Text("Repeat every") },
-                    suffix = { Text("days") },
+                    label = { Text(stringResource(R.string.habit_repeat_every)) },
+                    suffix = { Text(stringResource(R.string.habit_days_suffix)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     shape = RoundedCornerShape(18.dp)
                 )
                 Text(
-                    text = "Starting ${today.format(DateTimeFormatter.ofPattern("MMM d"))}",
+                    text = stringResource(R.string.habit_starting, today.format(DateTimeFormatter.ofPattern(stringResource(R.string.pattern_short_date)))),
                     color = Color(0xFFA7DCD2),
                     fontSize = 13.sp
                 )
             }
         }
-        (localError ?: saveError)?.let {
+        (localError?.let { stringResource(it) } ?: saveError?.resolve())?.let {
             Text(text = it, color = Color(0xFFFF8296), fontSize = 13.sp)
         }
         Spacer(Modifier.height(4.dp))
@@ -228,9 +231,9 @@ fun HabitEditorScreen(
                 }
                 if (schedule == null) {
                     localError = if (scheduleType == ScheduleType.SELECTED_DAYS) {
-                        "Choose at least one day."
+                        R.string.error_habit_days_required
                     } else {
-                        "Enter an interval of at least one day."
+                        R.string.error_habit_interval
                     }
                 } else {
                     onSave(title, schedule)
@@ -246,13 +249,13 @@ fun HabitEditorScreen(
                 contentColor = Color(0xFF0C1C19)
             )
         ) {
-            Text("Save habit", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.habit_save), fontWeight = FontWeight.Bold)
         }
         if (habit != null) {
             DeleteWithConfirmation(
-                label = "Delete habit",
-                dialogTitle = "Delete this habit?",
-                dialogText = "\"${habit.title}\" and its streak history will be removed.",
+                label = stringResource(R.string.habit_delete),
+                dialogTitle = stringResource(R.string.habit_delete_title),
+                dialogText = stringResource(R.string.habit_delete_text, habit.title),
                 onConfirm = onDelete
             )
         }

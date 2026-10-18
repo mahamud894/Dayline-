@@ -29,6 +29,11 @@ android {
         compose = true
     }
 
+    testOptions {
+        // Lets Robolectric tests read the app's own strings (used by LocalizationTest).
+        unitTests.isIncludeAndroidResources = true
+    }
+
     signingConfigs {
         if (releaseKeystore != null) {
             create("release") {
