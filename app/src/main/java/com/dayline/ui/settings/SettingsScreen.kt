@@ -51,7 +51,12 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     backupMessage: String? = null,
     onExportBackup: () -> Unit = {},
-    onRestoreBackup: () -> Unit = {}
+    onRestoreBackup: () -> Unit = {},
+    alarmFullScreenAllowed: Boolean = true,
+    isXiaomiDevice: Boolean = false,
+    onOpenFullScreenAlarmSettings: () -> Unit = {},
+    onOpenXiaomiPermissions: () -> Unit = {},
+    onOpenXiaomiAutostart: () -> Unit = {}
 ) {
     var summaryTime by remember(settings.morningSummaryTime) {
         mutableStateOf(settings.morningSummaryTime.toString())
@@ -198,6 +203,13 @@ fun SettingsScreen(
                 }
             }
         }
+        AlarmReliabilityCard(
+            fullScreenAllowed = alarmFullScreenAllowed,
+            isXiaomi = isXiaomiDevice,
+            onOpenFullScreenSettings = onOpenFullScreenAlarmSettings,
+            onOpenXiaomiPermissions = onOpenXiaomiPermissions,
+            onOpenXiaomiAutostart = onOpenXiaomiAutostart
+        )
         BackupCard(
             message = backupMessage,
             onExport = onExportBackup,
@@ -308,5 +320,65 @@ private fun BackupCard(
                 TextButton(onClick = { confirmingRestore = false }) { Text("Cancel") }
             }
         )
+    }
+}
+
+@Composable
+private fun AlarmReliabilityCard(
+    fullScreenAllowed: Boolean,
+    isXiaomi: Boolean,
+    onOpenFullScreenSettings: () -> Unit,
+    onOpenXiaomiPermissions: () -> Unit,
+    onOpenXiaomiAutostart: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF171D2A))
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("Alarm reliability", color = Color(0xFFF4F5FF), fontWeight = FontWeight.SemiBold)
+            Text(
+                "Deadlines ring like an alarm clock and open a full-screen page, " +
+                    "even on the lock screen.",
+                color = Color(0xFFC2C7D3),
+                style = MaterialTheme.typography.bodySmall
+            )
+            if (!fullScreenAllowed) {
+                Text(
+                    "Full-screen alarms are turned off, so deadlines only show a notification.",
+                    color = Color(0xFFFFC27A),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.testTag("full-screen-alarm-status")
+                )
+                Button(
+                    onClick = onOpenFullScreenSettings,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("open-full-screen-alarm-settings")
+                ) {
+                    Text("Allow full-screen alarms")
+                }
+            }
+            if (isXiaomi) {
+                Text(
+                    "On Xiaomi, Redmi and POCO phones, turn on \"Show on Lock screen\" and " +
+                        "\"Display pop-up windows while running in the background\", and " +
+                        "allow Autostart. Otherwise MIUI can block the alarm page or cancel " +
+                        "reminders.",
+                    color = Color(0xFFFFC27A),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.testTag("xiaomi-alarm-tip")
+                )
+                Button(onClick = onOpenXiaomiPermissions, modifier = Modifier.fillMaxWidth()) {
+                    Text("Open Xiaomi permissions")
+                }
+                OutlinedButton(onClick = onOpenXiaomiAutostart, modifier = Modifier.fillMaxWidth()) {
+                    Text("Open Autostart", color = Color(0xFFC7A2FF))
+                }
+            }
+        }
     }
 }

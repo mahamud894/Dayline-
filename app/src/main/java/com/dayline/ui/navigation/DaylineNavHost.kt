@@ -1,7 +1,9 @@
 package com.dayline.ui.navigation
 
 import android.Manifest
+import android.app.NotificationManager
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -163,6 +165,14 @@ fun DaylineNavHost(container: AppContainer) {
     val userSettings by settingsViewModel.settings.collectAsState()
     val summaryScheduleStatus by settingsViewModel.scheduleStatus.collectAsState()
     val settingsError by settingsViewModel.error.collectAsState()
+    // Re-read on every resume, since the user may have just changed it in system settings.
+    val alarmFullScreenAllowed = remember(calendarRefreshKey) {
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+            context.getSystemService(NotificationManager::class.java).canUseFullScreenIntent()
+    }
+    val isXiaomiDevice = remember {
+        Build.MANUFACTURER.lowercase() in setOf("xiaomi", "redmi", "poco")
+    }
     val calendarPermissionGranted =
         context.checkSelfPermission(Manifest.permission.READ_CALENDAR) ==
             PackageManager.PERMISSION_GRANTED
@@ -430,6 +440,36 @@ fun DaylineNavHost(container: AppContainer) {
                         )
                     },
                     modifier = Modifier.padding(contentPadding),
+                    alarmFullScreenAllowed = alarmFullScreenAllowed,
+                    isXiaomiDevice = isXiaomiDevice,
+                    onOpenFullScreenAlarmSettings = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            context.startActivityOrAppDetails(
+                                Intent(
+                                    Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                                    Uri.parse("package:${context.packageName}")
+                                )
+                            )
+                        }
+                    },
+                    onOpenXiaomiPermissions = {
+                        context.startActivityOrAppDetails(
+                            Intent("miui.intent.action.APP_PERM_EDITOR")
+                                .setClassName(
+                                    "com.miui.securitycenter",
+                                    "com.miui.permcenter.permissions.PermissionsEditorActivity"
+                                )
+                                .putExtra("extra_pkgname", context.packageName)
+                        )
+                    },
+                    onOpenXiaomiAutostart = {
+                        context.startActivityOrAppDetails(
+                            Intent().setClassName(
+                                "com.miui.securitycenter",
+                                "com.miui.permcenter.autostart.AutoStartManagementActivity"
+                            )
+                        )
+                    },
                     backupMessage = backupMessage,
                     onExportBackup = {
                         exportBackupLauncher.launch("Dayline-backup-${LocalDate.now()}.json")
@@ -443,5 +483,22 @@ fun DaylineNavHost(container: AppContainer) {
                 )
             }
         }
+    }
+}
+
+/** Opens a system screen, or the app's info page on phones that don't have it. */
+private fun Context.startActivityOrAppDetails(intent: Intent) {
+    try {
+        startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        startActivity(
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.parse("package:$packageName"))
+        )
+    } catch (_: SecurityException) {
+        startActivity(
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.parse("package:$packageName"))
+        )
     }
 }
