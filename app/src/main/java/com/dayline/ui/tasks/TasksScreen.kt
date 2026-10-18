@@ -3,13 +3,26 @@ package com.dayline.ui.tasks
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Clear
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,8 +39,10 @@ fun TasksScreen(
     reminderScheduleStatus: ReminderScheduleStatus?,
     modifier: Modifier = Modifier
 ) {
-    val activeTasks = tasks.filter { it.status != TaskStatus.COMPLETED }
-    val completedTasks = tasks.filter { it.status == TaskStatus.COMPLETED }
+    var query by rememberSaveable { mutableStateOf("") }
+    val shown = tasks.filter { it.matchesSearch(query) }
+    val activeTasks = shown.filter { it.status != TaskStatus.COMPLETED }
+    val completedTasks = shown.filter { it.status == TaskStatus.COMPLETED }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -49,6 +64,30 @@ fun TasksScreen(
                 fontWeight = FontWeight.Bold
             )
         }
+        if (tasks.isNotEmpty()) {
+            item {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("task-search"),
+                    placeholder = { Text("Search tasks") },
+                    leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+                    trailingIcon = if (query.isNotEmpty()) {
+                        {
+                            IconButton(onClick = { query = "" }) {
+                                Icon(Icons.Rounded.Clear, contentDescription = "Clear search")
+                            }
+                        }
+                    } else {
+                        null
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(18.dp)
+                )
+            }
+        }
         item {
             Text(
                 text = "Open tasks",
@@ -61,7 +100,11 @@ fun TasksScreen(
         if (activeTasks.isEmpty()) {
             item {
                 Text(
-                    text = "Nothing waiting in your task deck.",
+                    text = if (query.isBlank()) {
+                        "Nothing waiting in your task deck."
+                    } else {
+                        "No open tasks match \"${query.trim()}\"."
+                    },
                     color = Color(0xFFC2C7D3),
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
@@ -90,4 +133,12 @@ fun TasksScreen(
             }
         }
     }
+}
+
+/** Every word of [query] must appear in the title or notes, ignoring case. Blank matches all. */
+internal fun Task.matchesSearch(query: String): Boolean {
+    val words = query.trim().lowercase().split(Regex("\\s+")).filter(String::isNotEmpty)
+    if (words.isEmpty()) return true
+    val haystack = "$title\n${notes.orEmpty()}".lowercase()
+    return words.all(haystack::contains)
 }
